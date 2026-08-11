@@ -16,6 +16,7 @@ import { DesktopNavigation, MobileNavigation, type AppView } from "./Navigation"
 import { RegionMap } from "./RegionMap";
 import { RoomPanel } from "./RoomPanel";
 import { RoomPreview } from "./RoomPreview";
+import { SuggestionModal } from "./SuggestionModal";
 
 export function ExplorePage() {
   const [selectedRegion, setSelectedRegion] = useState("마포구");
@@ -29,6 +30,7 @@ export function ExplorePage() {
   const [isSelectingLocation, setIsSelectingLocation] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<ApproximateLocation | null>(null);
   const [activeView, setActiveView] = useState<AppView>("explore");
+  const [suggestionOpen, setSuggestionOpen] = useState(false);
 
   const selectedRoom = useMemo(
     () => rooms.find((room) => room.id === selectedRoomId),
@@ -108,6 +110,7 @@ export function ExplorePage() {
     <main className="app-shell">
       <AppHeader
         onProfileClick={() => setActiveView("profile")}
+        onSuggestionClick={() => setSuggestionOpen(true)}
         onLogout={() => window.alert("로그아웃은 로그인 기능 연결 후 사용할 수 있습니다.")}
       />
 
@@ -178,6 +181,8 @@ export function ExplorePage() {
           }}
         />
       )}
+
+      {suggestionOpen && <SuggestionModal onClose={() => setSuggestionOpen(false)} />}
 
       {createRoomOpen && selectedLocation && (
         <CreateRoomModal

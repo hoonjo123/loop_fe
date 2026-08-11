@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, LogOut, Search, UserRound } from "lucide-react";
+import { ChevronDown, Lightbulb, LogOut, Search, UserRound } from "lucide-react";
 
 type AppHeaderProps = {
   onProfileClick: () => void;
+  onSuggestionClick: () => void;
   onLogout: () => void;
 };
 
-export function AppHeader({ onProfileClick, onLogout }: AppHeaderProps) {
+export function AppHeader({ onProfileClick, onSuggestionClick, onLogout }: AppHeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLElement>(null);
@@ -73,6 +74,13 @@ export function AppHeader({ onProfileClick, onLogout }: AppHeaderProps) {
             }}>
               <UserRound aria-hidden="true" />
               <span>마이페이지</span>
+            </button>
+            <button type="button" role="menuitem" onClick={() => {
+              setProfileMenuOpen(false);
+              onSuggestionClick();
+            }}>
+              <Lightbulb aria-hidden="true" />
+              <span>건의함</span>
             </button>
             <button className="logout" type="button" role="menuitem" onClick={() => {
               setProfileMenuOpen(false);

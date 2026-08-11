@@ -52,6 +52,10 @@
   .create-room-form { padding: 20px 20px calc(24px + env(safe-area-inset-bottom)); }
   .location-method-modal { align-items: end; padding: 0; }
   .location-method-modal article { width: 100%; padding: 25px 20px calc(25px + env(safe-area-inset-bottom)); border-radius: 25px 25px 0 0; }
+  .suggestion-modal { align-items: end; padding: 0; }
+  .suggestion-modal article { width: 100%; max-height: calc(100dvh - 34px); border-radius: 25px 25px 0 0; }
+  .suggestion-modal header { padding: 25px 20px 20px; }
+  .suggestion-form { padding: 21px 20px calc(24px + env(safe-area-inset-bottom)); }
   .chat-list-page { grid-column: auto; min-height: calc(100vh - 62px); padding: 25px 14px 90px; }
   .chat-list-header { align-items: flex-start; }
   .chat-list-header h1 { font-size: 26px; }
