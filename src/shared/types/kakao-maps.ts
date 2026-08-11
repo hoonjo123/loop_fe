@@ -37,12 +37,12 @@ export type KakaoMapsApi = {
   event: {
     addListener: (
       target: KakaoMapInstance,
-      eventName: "click" | "zoom_changed",
+      eventName: "click" | "zoom_changed" | "idle",
       handler: ((event: KakaoMapMouseEvent) => void) | (() => void),
     ) => void;
     removeListener: (
       target: KakaoMapInstance,
-      eventName: "click" | "zoom_changed",
+      eventName: "click" | "zoom_changed" | "idle",
       handler: ((event: KakaoMapMouseEvent) => void) | (() => void),
     ) => void;
   };

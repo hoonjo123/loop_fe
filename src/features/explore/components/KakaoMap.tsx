@@ -27,6 +27,14 @@ const roomOffsets = [
 const CITY_LEVEL = 9;
 const DISTRICT_LEVEL = 6;
 
+type MapDisplayMode = "city" | "district" | "room";
+
+function getMapDisplayMode(level: number): MapDisplayMode {
+  if (level >= CITY_LEVEL) return "city";
+  if (level >= DISTRICT_LEVEL) return "district";
+  return "room";
+}
+
 export function KakaoMap({
   selectedRegion,
   onRegionChange,
@@ -43,7 +51,7 @@ export function KakaoMap({
   const roomOverlaysRef = useRef<KakaoCustomOverlayInstance[]>([]);
   const selectedLocationOverlayRef = useRef<KakaoCustomOverlayInstance | null>(null);
   const [focusedRegion, setFocusedRegion] = useState<string | null>(null);
-  const [mapLevel, setMapLevel] = useState(8);
+  const [displayMode, setDisplayMode] = useState<MapDisplayMode>("district");
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -79,11 +87,17 @@ export function KakaoMap({
     const maps = mapsApiRef.current;
     if (!ready || !map || !maps) return;
 
-    const handleZoomChange = () => setMapLevel(map.getLevel());
-    handleZoomChange();
-    maps.event.addListener(map, "zoom_changed", handleZoomChange);
+    const syncDisplayMode = () => {
+      const nextMode = getMapDisplayMode(map.getLevel());
+      setDisplayMode((currentMode) =>
+        currentMode === nextMode ? currentMode : nextMode,
+      );
+    };
 
-    return () => maps.event.removeListener(map, "zoom_changed", handleZoomChange);
+    syncDisplayMode();
+    maps.event.addListener(map, "idle", syncDisplayMode);
+
+    return () => maps.event.removeListener(map, "idle", syncDisplayMode);
   }, [ready]);
 
   useEffect(() => {
@@ -91,9 +105,10 @@ export function KakaoMap({
     const maps = mapsApiRef.current;
     if (!ready || !map || !maps) return;
 
-    overlaysRef.current.forEach((overlay) => overlay.setMap(null));
+    const previousOverlays = overlaysRef.current;
+    let nextOverlays: KakaoCustomOverlayInstance[] = [];
 
-    if (mapLevel >= CITY_LEVEL) {
+    if (displayMode === "city") {
       const totalCount = regions.reduce((sum, region) => sum + region.count, 0);
       const position = new maps.LatLng(37.5665, 126.978);
       const content = document.createElement("button");
@@ -111,7 +126,7 @@ export function KakaoMap({
         map.setLevel(7, { anchor: position, animate: true });
       });
 
-      overlaysRef.current = [new maps.CustomOverlay({
+      nextOverlays = [new maps.CustomOverlay({
         map,
         position,
         content,
@@ -119,12 +134,18 @@ export function KakaoMap({
         yAnchor: 0.5,
         zIndex: 4,
       })];
+      overlaysRef.current = nextOverlays;
+      previousOverlays.forEach((overlay) => overlay.setMap(null));
       return;
     }
 
-    if (mapLevel < DISTRICT_LEVEL) return;
+    if (displayMode !== "district") {
+      overlaysRef.current = nextOverlays;
+      previousOverlays.forEach((overlay) => overlay.setMap(null));
+      return;
+    }
 
-    overlaysRef.current = regions.map((region) => {
+    nextOverlays = regions.map((region) => {
       const position = new maps.LatLng(region.latitude, region.longitude);
       const content = document.createElement("button");
       content.type = "button";
@@ -161,25 +182,27 @@ export function KakaoMap({
       });
     });
 
-    return () => {
-      overlaysRef.current.forEach((overlay) => overlay.setMap(null));
-      overlaysRef.current = [];
-    };
-  }, [mapLevel, onRegionChange, ready, selectedRegion]);
+    overlaysRef.current = nextOverlays;
+    previousOverlays.forEach((overlay) => overlay.setMap(null));
+  }, [displayMode, onRegionChange, ready, selectedRegion]);
 
   useEffect(() => {
     const map = mapRef.current;
     const maps = mapsApiRef.current;
-    roomOverlaysRef.current.forEach((overlay) => overlay.setMap(null));
-    roomOverlaysRef.current = [];
+    const previousOverlays = roomOverlaysRef.current;
+    let nextOverlays: KakaoCustomOverlayInstance[] = [];
 
-    if (!ready || !map || !maps || mapLevel >= DISTRICT_LEVEL) return;
+    if (!ready || !map || !maps || displayMode !== "room") {
+      roomOverlaysRef.current = nextOverlays;
+      previousOverlays.forEach((overlay) => overlay.setMap(null));
+      return;
+    }
 
     const detailRegion = focusedRegion ?? selectedRegion;
     const region = regions.find((item) => item.name === detailRegion);
     if (!region) return;
 
-    roomOverlaysRef.current = rooms.map((room, index) => {
+    nextOverlays = rooms.map((room, index) => {
       const offset = roomOffsets[index % roomOffsets.length];
       const position = new maps.LatLng(
         region.latitude + offset.latitude,
@@ -207,11 +230,16 @@ export function KakaoMap({
       });
     });
 
+    roomOverlaysRef.current = nextOverlays;
+    previousOverlays.forEach((overlay) => overlay.setMap(null));
+  }, [displayMode, focusedRegion, onRoomSelect, ready, selectedRegion]);
+
+  useEffect(() => {
     return () => {
+      overlaysRef.current.forEach((overlay) => overlay.setMap(null));
       roomOverlaysRef.current.forEach((overlay) => overlay.setMap(null));
-      roomOverlaysRef.current = [];
     };
-  }, [focusedRegion, mapLevel, onRoomSelect, ready, selectedRegion]);
+  }, []);
 
   useEffect(() => {
     const map = mapRef.current;
