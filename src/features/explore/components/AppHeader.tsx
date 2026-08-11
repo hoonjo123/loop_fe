@@ -8,7 +8,7 @@ export function AppHeader() {
 
   return (
     <header className="topbar">
-      <a className="brand" href="#" aria-label="loop 홈">
+      <a className="brand" href="/" aria-label="loop 홈">
         <span className="brand-mark">l</span>
         <span>loop</span>
       </a>
