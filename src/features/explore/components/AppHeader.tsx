@@ -3,7 +3,11 @@
 import { useState } from "react";
 import { Search } from "lucide-react";
 
-export function AppHeader() {
+type AppHeaderProps = {
+  onProfileClick: () => void;
+};
+
+export function AppHeader({ onProfileClick }: AppHeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
 
   return (
@@ -24,7 +28,7 @@ export function AppHeader() {
       </div>
 
       <nav className="top-actions" aria-label="사용자 메뉴">
-        <button className="profile-button" aria-label="내 프로필">
+        <button className="profile-button" onClick={onProfileClick} aria-label="내 프로필">
           <span>민</span>
           <b>민들레</b>
         </button>

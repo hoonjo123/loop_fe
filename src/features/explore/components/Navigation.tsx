@@ -1,6 +1,6 @@
 import { CircleHelp, MapPinned, MessageCircle, Plus, UserRound } from "lucide-react";
 
-export type AppView = "explore" | "chats" | "room";
+export type AppView = "explore" | "chats" | "room" | "profile";
 
 type NavigationProps = {
   activeView: AppView;
@@ -25,7 +25,7 @@ export function MobileNavigation({ activeView, onNavigate, onCreateRoom }: Navig
       <button className={activeView === "explore" ? "active" : ""} onClick={() => onNavigate("explore")}><span className="nav-icon"><MapPinned /></span><small>둘러보기</small></button>
       <button className={activeView === "chats" || activeView === "room" ? "active" : ""} onClick={() => onNavigate("chats")}><span className="nav-icon"><MessageCircle /></span><small>내 채팅</small><i>3</i></button>
       <button onClick={onCreateRoom}><span className="nav-icon"><Plus /></span><small>방 만들기</small></button>
-      <button><span className="nav-icon"><UserRound /></span><small>내 정보</small></button>
+      <button className={activeView === "profile" ? "active" : ""} onClick={() => onNavigate("profile")}><span className="nav-icon"><UserRound /></span><small>내 정보</small></button>
     </nav>
   );
 }

@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { ChatListPage } from "@/src/features/chat-list/components/ChatListPage";
 import { ChatRoomPage } from "@/src/features/chat-room/components/ChatRoomPage";
+import { ProfilePage } from "@/src/features/profile/components/ProfilePage";
 import { rooms } from "../data/mockData";
 import type { ApproximateLocation } from "../types";
 import { AppHeader } from "./AppHeader";
@@ -31,6 +32,7 @@ export function ExplorePage() {
   );
 
   const startCreateRoom = useCallback(() => {
+    setActiveView("explore");
     setSelectedRoomId(null);
     setCreateRoomOpen(false);
     setSelectedLocation(null);
@@ -55,7 +57,7 @@ export function ExplorePage() {
 
   return (
     <main className="app-shell">
-      <AppHeader />
+      <AppHeader onProfileClick={() => setActiveView("profile")} />
 
       <section className="workspace">
         <DesktopNavigation activeView={activeView} onNavigate={setActiveView} onCreateRoom={startCreateRoom} />
@@ -78,6 +80,8 @@ export function ExplorePage() {
           </>
         ) : activeView === "chats" ? (
           <ChatListPage />
+        ) : activeView === "profile" ? (
+          <ProfilePage />
         ) : joinedRoom ? (
           <ChatRoomPage key={joinedRoom.id} room={joinedRoom} onBack={() => setActiveView("explore")} />
         ) : (
