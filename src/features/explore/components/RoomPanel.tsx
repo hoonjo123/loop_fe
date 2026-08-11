@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronsDown, ChevronsUp } from "lucide-react";
 import { rooms } from "../data/mockData";
 
 type RoomPanelProps = {
@@ -21,8 +21,7 @@ export function RoomPanel({ selectedRegion, selectedRoomId, onRoomSelect }: Room
         aria-label={isExpanded ? "채팅 목록 접기" : "채팅 목록 펼치기"}
         onClick={() => setIsExpanded((expanded) => !expanded)}
       >
-        {isExpanded ? <ChevronDown aria-hidden="true" /> : <ChevronUp aria-hidden="true" />}
-        <span>{isExpanded ? "채팅 목록 접기" : "주변 채팅 보기"}</span>
+        {isExpanded ? <ChevronsDown aria-hidden="true" /> : <ChevronsUp aria-hidden="true" />}
       </button>
 
       <div className="room-list" id="mobile-room-list">
