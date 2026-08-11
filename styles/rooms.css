@@ -1,0 +1,21 @@
+.room-panel { min-width: 0; background: white; border-left: 1px solid var(--line); display: flex; flex-direction: column; overflow: hidden; }
+.room-heading { padding: 25px 25px 18px; display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid #edf1ef; }
+.room-heading p { margin: 0 0 5px; color: var(--mint-dark); font-size: 10px; font-weight: 800; }
+.room-heading h2 { margin: 0 0 7px; font-size: 21px; letter-spacing: -.04em; }
+.room-heading > div > span { color: #85938e; font-size: 11px; }
+.sort-button { padding: 8px 10px; box-shadow: none; flex-shrink: 0; }
+.room-list { overflow-y: auto; padding: 8px 13px; }
+.room-card { width: 100%; border: 1px solid transparent; border-bottom-color: #edf1ef; background: white; padding: 14px 10px; display: flex; gap: 12px; text-align: left; cursor: pointer; border-radius: 14px; transition: .18s ease; }
+.room-card:hover, .room-card.active { background: #f5faf7; border-color: #dceee6; transform: translateY(-1px); }
+.room-copy { min-width: 0; flex: 1; }
+.room-meta { display: flex; align-items: center; gap: 7px; }
+.room-meta > span { padding: 3px 6px; border-radius: 5px; font-size: 8px; font-weight: 850; }
+.temporary { color: #b44d39; background: #ffebe6; }
+.permanent { color: #3b6ab5; background: #eaf1ff; }
+.room-meta small { color: #93a09b; font-size: 9px; }
+.room-meta .room-participants { color: #55746a; font-weight: 700; }
+.room-card h3 { margin: 7px 0 5px; font-size: 14px; letter-spacing: -.025em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.room-card p { margin: 0; color: #778680; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.room-bottom { margin-top: 9px; display: flex; justify-content: space-between; color: #94a19c; font-size: 9px; }
+.room-bottom span { color: #55746a; }
+.more-button { margin: 4px 23px 18px; padding: 12px; border: 1px solid #dfe7e3; border-radius: 12px; color: #63746e; background: white; font-size: 11px; font-weight: 800; cursor: pointer; }

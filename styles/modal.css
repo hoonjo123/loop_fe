@@ -1,0 +1,40 @@
+.room-preview { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 20px; }
+.preview-backdrop { position: absolute; inset: 0; width: 100%; border: 0; background: rgba(11,31,27,.43); backdrop-filter: blur(4px); }
+.room-preview article { width: min(420px, 100%); position: relative; background: white; border-radius: 25px; overflow: hidden; box-shadow: 0 28px 80px rgba(15,40,34,.3); animation: appear .22s ease-out; }
+@keyframes appear { from { opacity: 0; transform: translateY(14px) scale(.98); } }
+.preview-close { position: absolute; z-index: 2; right: 14px; top: 14px; width: 32px; height: 32px; border: 0; border-radius: 50%; color: var(--ink); background: #edf4f0; font-size: 20px; cursor: pointer; }
+.preview-body { padding: 28px 23px 23px; }
+.preview-body .room-meta { padding-right: 42px; }
+.preview-body h2 { margin: 10px 0 7px; font-size: 22px; letter-spacing: -.04em; }
+.preview-body > p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+.join-button { width: 100%; margin-top: 20px; padding: 14px; border: 0; border-radius: 13px; background: var(--ink); color: white; font-size: 13px; font-weight: 850; cursor: pointer; }
+.safety-copy { display: block; margin-top: 10px; color: #98a49f; text-align: center; font-size: 9px; }
+
+.create-room-modal { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 20px; }
+.create-room-modal article { width: min(520px, 100%); max-height: calc(100vh - 40px); position: relative; overflow: auto; background: white; border-radius: 24px; box-shadow: 0 28px 80px rgba(15,40,34,.3); animation: appear .22s ease-out; }
+.create-room-header { position: relative; padding: 27px 28px 22px; background: var(--mint-pale); }
+.create-room-header span { color: var(--mint-dark); font-size: 11px; font-weight: 800; }
+.create-room-header h2 { margin: 5px 0 6px; color: var(--ink); font-size: 25px; letter-spacing: -.04em; }
+.create-room-header p { margin: 0; color: #70817b; font-size: 12px; }
+.create-room-close { position: absolute; right: 18px; top: 18px; width: 34px; height: 34px; display: grid; place-items: center; border: 0; border-radius: 50%; color: var(--ink); background: rgba(255,255,255,.8); cursor: pointer; }
+.create-room-close svg { width: 18px; height: 18px; }
+.create-room-form { display: flex; flex-direction: column; gap: 17px; padding: 23px 28px 27px; }
+.room-type-field { min-width: 0; margin: 0; padding: 0; border: 0; }
+.room-type-field legend, .create-room-field > span { margin-bottom: 8px; color: var(--ink); font-size: 12px; font-weight: 800; }
+.room-type-options { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; }
+.room-type-options button { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 13px 14px; border: 1px solid var(--line); border-radius: 12px; color: var(--ink); background: white; cursor: pointer; }
+.room-type-options button.active { border-color: var(--mint-dark); background: var(--mint-pale); box-shadow: 0 0 0 2px rgba(52,212,154,.1); }
+.room-type-options strong { font-size: 12px; }
+.room-type-options span { color: #7c8b86; font-size: 10px; }
+.create-room-field { position: relative; display: flex; flex-direction: column; }
+.create-room-field input, .create-room-field textarea, .create-room-field select { width: 100%; border: 1px solid var(--line); border-radius: 11px; outline: 0; color: var(--ink); background: #f8faf9; font: inherit; font-size: 12px; transition: border-color .18s ease, box-shadow .18s ease; }
+.create-room-field input, .create-room-field select { height: 43px; padding: 0 12px; }
+.create-room-field textarea { min-height: 76px; padding: 11px 12px; resize: vertical; }
+.create-room-field input:focus, .create-room-field textarea:focus, .create-room-field select:focus { border-color: var(--mint-dark); box-shadow: 0 0 0 3px rgba(52,212,154,.1); }
+.create-room-field input[readonly] { color: #667872; background: #eef3f0; }
+.create-room-field small { align-self: flex-end; margin-top: 5px; color: #96a29e; font-size: 9px; }
+.create-room-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.create-room-grid.single { grid-template-columns: 1fr; }
+.create-room-notice { margin: -4px 0 0; color: #87958f; font-size: 10px; }
+.create-room-submit { width: 100%; height: 47px; border: 0; border-radius: 13px; color: white; background: var(--ink); font-size: 13px; font-weight: 850; cursor: pointer; }
+.create-room-submit:hover { background: #214b42; }

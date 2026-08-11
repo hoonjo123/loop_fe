@@ -1,0 +1,70 @@
+@media (max-width: 1080px) {
+  .workspace { grid-template-columns: 76px minmax(430px, 1fr) 360px; }
+  .topbar { grid-template-columns: 160px minmax(260px, 420px) 1fr; }
+  .map-toolbar { padding-left: 24px; padding-right: 24px; }
+}
+
+@media (max-width: 820px) {
+  .app-shell { overflow: auto; padding-bottom: 70px; }
+  .topbar { height: 62px; grid-template-columns: auto 1fr auto; padding: 0 17px; gap: 12px; position: sticky; top: 0; }
+  .brand { font-size: 21px; }
+  .brand-mark { width: 29px; height: 29px; border-radius: 10px 10px 10px 4px; }
+  .search { justify-self: end; width: 42px; justify-content: center; padding: 0; background: transparent; }
+  .search input { display: none; }
+  .top-actions .profile-button b { display: none; }
+  .profile-button { padding: 0; }
+  .profile-button span { width: 34px; height: 34px; }
+  .workspace { height: auto; display: block; }
+  .rail { display: none; }
+  .map-panel { height: 55vh; min-height: 430px; }
+  .map-toolbar { padding: 19px 18px 10px; }
+  .map-toolbar h1 { font-size: 23px; }
+  .map-canvas { min-height: 300px; }
+  .region-overlay { width: 54px; height: 54px; }
+  .region-overlay strong { font-size: 17px; }
+  .region-overlay small { font-size: 8px; }
+  .room-panel { border: 0; border-radius: 24px 24px 0 0; margin-top: -18px; position: relative; z-index: 8; overflow: visible; min-height: 48vh; }
+  .room-panel::before { content: ""; width: 35px; height: 4px; position: absolute; left: 50%; top: 9px; transform: translateX(-50%); border-radius: 3px; background: #dbe3df; }
+  .room-heading { padding: 26px 19px 14px; }
+  .room-list { overflow: visible; padding: 6px 9px; }
+  .room-card { padding: 13px 9px; }
+  .create-button { display: none; }
+  .bottom-nav { position: fixed; display: grid; grid-template-columns: repeat(4, 1fr); left: 0; right: 0; bottom: 0; z-index: 30; height: 68px; padding-bottom: env(safe-area-inset-bottom); border-top: 1px solid var(--line); background: rgba(255,255,255,.96); backdrop-filter: blur(14px); box-shadow: 0 -8px 30px rgba(29,57,47,.07); }
+  .bottom-nav button { border: 0; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #87958f; position: relative; }
+  .bottom-nav .nav-icon { width: 21px; height: 21px; }
+  .bottom-nav button small { font-size: 9px; font-weight: 750; }
+  .bottom-nav button.active { color: var(--mint-dark); }
+  .bottom-nav button:nth-child(3) { color: var(--mint-dark); }
+  .bottom-nav i { right: 22%; top: 7px; }
+  .room-preview { align-items: end; padding: 0; }
+  .room-preview article { width: 100%; border-radius: 25px 25px 0 0; }
+  .create-room-modal { align-items: end; padding: 0; }
+  .create-room-modal article { width: 100%; max-height: calc(100vh - 40px); border-radius: 25px 25px 0 0; }
+  .create-room-header { padding: 24px 20px 19px; }
+  .create-room-form { padding: 20px 20px calc(24px + env(safe-area-inset-bottom)); }
+  .chat-list-page { grid-column: auto; min-height: calc(100vh - 62px); padding: 25px 14px 90px; }
+  .chat-list-header { align-items: flex-start; }
+  .chat-list-header h1 { font-size: 26px; }
+  .chat-summary { display: none; }
+  .chat-list-toolbar { align-items: stretch; flex-direction: column; }
+  .chat-search { width: 100%; }
+  .chat-tabs { align-self: flex-start; }
+  .conversation-row { padding: 15px 13px; }
+  .chat-room-page { grid-column: auto; min-height: calc(100vh - 130px); display: block; }
+  .chat-room-main { min-height: calc(100vh - 130px); border-right: 0; }
+  .chat-room-header { min-height: 64px; padding: 10px 13px; }
+  .chat-room-info { display: none; }
+  .chat-messages { padding: 20px 14px; }
+  .chat-message-row { max-width: 86%; }
+  .chat-composer { padding: 10px 11px calc(10px + env(safe-area-inset-bottom)); }
+  .user-profile-modal { align-items: end; padding: 0; }
+  .user-profile-modal article { width: 100%; padding-bottom: calc(27px + env(safe-area-inset-bottom)); border-radius: 24px 24px 0 0; }
+}
+
+@media (max-width: 420px) {
+  .region-overlay { width: 49px; height: 49px; }
+  .region-overlay strong { font-size: 15px; }
+  .region-overlay .heat { display: none; }
+  .room-heading > div > span { display: none; }
+  .room-type-options, .create-room-grid { grid-template-columns: 1fr; }
+}
