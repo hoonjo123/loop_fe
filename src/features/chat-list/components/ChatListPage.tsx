@@ -13,7 +13,6 @@ type ChatListPageProps = {
 
 export function ChatListPage({ onConversationOpen }: ChatListPageProps) {
   const [filter, setFilter] = useState<ChatFilter>("전체");
-  const [selectedId, setSelectedId] = useState(1);
 
   const conversations = useMemo(() => {
     if (filter === "오픈채팅") return mockConversations.filter((item) => item.type === "OPEN");
@@ -47,11 +46,8 @@ export function ChatListPage({ onConversationOpen }: ChatListPageProps) {
         {conversations.map((conversation) => (
           <button
             key={conversation.id}
-            className={`conversation-row ${selectedId === conversation.id ? "active" : ""}`}
-            onClick={() => {
-              setSelectedId(conversation.id);
-              onConversationOpen(conversation);
-            }}
+            className="conversation-row"
+            onClick={() => onConversationOpen(conversation)}
           >
             <div className="conversation-copy">
               <div className="conversation-title">

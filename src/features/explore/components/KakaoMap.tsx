@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Minus, Plus } from "lucide-react";
 import { env } from "@/src/config/env";
 import type { KakaoCustomOverlayInstance, KakaoMapInstance, KakaoMapMouseEvent, KakaoMapsApi } from "@/src/shared/types/kakao-maps";
 import { regions, rooms } from "../data/mockData";
@@ -27,6 +28,8 @@ const roomOffsets = [
 
 const CITY_LEVEL = 9;
 const DISTRICT_LEVEL = 6;
+const MIN_ZOOM_LEVEL = 1;
+const MAX_ZOOM_LEVEL = 14;
 
 type MapDisplayMode = "city" | "district" | "room";
 
@@ -55,6 +58,7 @@ export function KakaoMap({
   const currentLocationOverlayRef = useRef<KakaoCustomOverlayInstance | null>(null);
   const [focusedRegion, setFocusedRegion] = useState<string | null>(null);
   const [displayMode, setDisplayMode] = useState<MapDisplayMode>("district");
+  const [zoomLevel, setZoomLevel] = useState(8);
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -91,7 +95,9 @@ export function KakaoMap({
     if (!ready || !map || !maps) return;
 
     const syncDisplayMode = () => {
-      const nextMode = getMapDisplayMode(map.getLevel());
+      const level = map.getLevel();
+      const nextMode = getMapDisplayMode(level);
+      setZoomLevel(level);
       setDisplayMode((currentMode) =>
         currentMode === nextMode ? currentMode : nextMode,
       );
@@ -102,6 +108,17 @@ export function KakaoMap({
 
     return () => maps.event.removeListener(map, "idle", syncDisplayMode);
   }, [ready]);
+
+  const changeZoom = (direction: "in" | "out") => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    const nextLevel = Math.min(
+      MAX_ZOOM_LEVEL,
+      Math.max(MIN_ZOOM_LEVEL, map.getLevel() + (direction === "in" ? -1 : 1)),
+    );
+    map.setLevel(nextLevel, { animate: true });
+  };
 
   useEffect(() => {
     const map = mapRef.current;
@@ -315,6 +332,25 @@ export function KakaoMap({
   return (
     <div className={`map-canvas ${isSelectingLocation ? "selecting-location" : ""}`}>
       <div ref={containerRef} className="kakao-map" aria-label="서울 지역 Kakao 지도" />
+
+      <div className="map-zoom-controls" aria-label="지도 확대 및 축소">
+        <button
+          type="button"
+          aria-label="지도 확대"
+          disabled={!ready || zoomLevel <= MIN_ZOOM_LEVEL}
+          onClick={() => changeZoom("in")}
+        >
+          <Plus aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          aria-label="지도 축소"
+          disabled={!ready || zoomLevel >= MAX_ZOOM_LEVEL}
+          onClick={() => changeZoom("out")}
+        >
+          <Minus aria-hidden="true" />
+        </button>
+      </div>
 
       {!ready && !error && <div className="map-status">지도를 불러오는 중이에요.</div>}
       {error && (

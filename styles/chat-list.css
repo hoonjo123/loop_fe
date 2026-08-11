@@ -22,8 +22,7 @@
 .conversation-list { max-width: 920px; margin: 0 auto; border: 1px solid #e1e8e5; border-radius: 20px; overflow: hidden; background: white; box-shadow: 0 16px 40px rgba(38,70,58,.05); }
 .conversation-row { width: 100%; min-height: 92px; border: 0; border-bottom: 1px solid #edf1ef; padding: 17px 19px; display: flex; align-items: center; gap: 14px; text-align: left; background: white; cursor: pointer; transition: background .16s ease; }
 .conversation-row:last-child { border-bottom: 0; }
-.conversation-row:hover, .conversation-row.active { background: #f2f8f5; }
-.conversation-row.active { box-shadow: inset 3px 0 var(--mint); }
+.conversation-row:hover { background: #f2f8f5; }
 .conversation-copy { min-width: 0; flex: 1; }
 .conversation-title { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .conversation-title strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; }

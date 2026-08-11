@@ -13,6 +13,13 @@
 
 .map-canvas { flex: 1; min-height: 440px; position: relative; overflow: hidden; background: #e8efeb; }
 .kakao-map { position: absolute; inset: 0; width: 100%; height: 100%; }
+.map-zoom-controls { position: absolute; top: 16px; right: 16px; z-index: 8; overflow: hidden; display: flex; flex-direction: column; border: 1px solid rgba(211,224,218,.95); border-radius: 13px; background: rgba(255,255,255,.96); box-shadow: 0 8px 24px rgba(28,62,52,.16); }
+.map-zoom-controls button { width: 40px; height: 40px; border: 0; display: grid; place-items: center; color: var(--ink); background: transparent; cursor: pointer; }
+.map-zoom-controls button + button { border-top: 1px solid var(--line); }
+.map-zoom-controls button:hover:not(:disabled),
+.map-zoom-controls button:focus-visible { color: var(--mint-dark); background: #f1f7f4; outline: none; }
+.map-zoom-controls button:disabled { color: #b7c1bd; cursor: default; }
+.map-zoom-controls svg { width: 18px; height: 18px; stroke-width: 2.4; }
 .map-canvas.selecting-location .kakao-map,
 .map-canvas.selecting-location .kakao-map * { cursor: crosshair !important; }
 .map-status { position: absolute; inset: 0; z-index: 7; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: #6d7c77; background: #edf3ef; font-size: 13px; }
