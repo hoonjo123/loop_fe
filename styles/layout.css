@@ -21,9 +21,29 @@
 .search > svg { width: 18px; height: 18px; flex: 0 0 auto; display: block; color: #71827d; stroke-width: 2; }
 .search input { width: 100%; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 14px; }
 .search input::placeholder { color: #91a09b; }
-.top-actions { justify-self: end; display: flex; align-items: center; gap: 14px; }
+.top-actions { position: relative; justify-self: end; display: flex; align-items: center; gap: 14px; }
 .profile-button { border: 0; background: transparent; cursor: pointer; }
 .profile-button { display: flex; align-items: center; gap: 9px; font-size: 13px; }
 .profile-button span { width: 36px; height: 36px; border-radius: 13px; display: grid; place-items: center; background: #ffe8a9; color: #704d14; font-weight: 800; }
+.profile-chevron { width: 15px; height: 15px; color: #7e8d87; transition: transform .16s ease; }
+.profile-button.open .profile-chevron { transform: rotate(180deg); }
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 164px;
+  overflow: hidden;
+  padding: 6px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: white;
+  box-shadow: 0 16px 42px rgba(24,54,44,.16);
+}
+.profile-dropdown button { width: 100%; display: flex; align-items: center; gap: 10px; border: 0; border-radius: 10px; padding: 10px 11px; color: var(--ink); background: transparent; font-size: 11px; font-weight: 750; text-align: left; cursor: pointer; }
+.profile-dropdown button:hover,
+.profile-dropdown button:focus-visible { background: #f1f7f4; outline: none; }
+.profile-dropdown button.logout { color: #b34f3e; }
+.profile-dropdown button svg { width: 16px; height: 16px; }
+.profile-dropdown button span { width: auto; height: auto; display: inline; border-radius: 0; color: inherit; background: transparent; font-weight: inherit; }
 
 .workspace { height: calc(100vh - 72px); display: grid; grid-template-columns: 88px minmax(480px, 1fr) minmax(360px, 440px); }

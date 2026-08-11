@@ -1,10 +1,5 @@
 .room-panel { min-width: 0; background: white; border-left: 1px solid var(--line); display: flex; flex-direction: column; overflow: hidden; }
-.room-heading { padding: 25px 25px 18px; display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid #edf1ef; }
-.room-heading p { margin: 0 0 5px; color: var(--mint-dark); font-size: 10px; font-weight: 800; }
-.room-heading h2 { margin: 0 0 7px; font-size: 21px; letter-spacing: -.04em; }
-.room-heading > div > span { color: #85938e; font-size: 11px; }
-.sort-button { padding: 8px 10px; box-shadow: none; flex-shrink: 0; }
-.room-list { overflow-y: auto; padding: 8px 13px; }
+.room-list { flex: 1; overflow-y: auto; padding: 12px 13px 8px; }
 .room-card { width: 100%; border: 1px solid transparent; border-bottom-color: #edf1ef; background: white; padding: 14px 10px; display: flex; gap: 12px; text-align: left; cursor: pointer; border-radius: 14px; transition: .18s ease; }
 .room-card:hover, .room-card.active { background: #f5faf7; border-color: #dceee6; transform: translateY(-1px); }
 .room-copy { min-width: 0; flex: 1; }

@@ -4,8 +4,8 @@
 .chat-room-header > div { min-width: 0; flex: 1; }
 .chat-room-header h1 { margin: 0 0 5px; overflow: hidden; color: var(--ink); font-size: 16px; letter-spacing: -.025em; text-overflow: ellipsis; white-space: nowrap; }
 .chat-room-header span { color: #87958f; font-size: 10px; }
-.chat-back-button, .chat-search-button { width: 36px; height: 36px; flex: 0 0 auto; display: grid; place-items: center; border: 1px solid #e1e9e5; border-radius: 11px; color: #61736c; background: white; cursor: pointer; }
-.chat-back-button svg, .chat-search-button svg { width: 18px; height: 18px; }
+.chat-back-button { width: 36px; height: 36px; flex: 0 0 auto; display: grid; place-items: center; border: 1px solid #e1e9e5; border-radius: 11px; color: #61736c; background: white; cursor: pointer; }
+.chat-back-button svg { width: 18px; height: 18px; }
 
 .chat-messages { min-height: 0; flex: 1; overflow-y: auto; padding: 24px clamp(18px, 4vw, 46px); }
 .chat-date-divider { display: flex; align-items: center; gap: 12px; margin-bottom: 22px; color: #96a39e; font-size: 9px; }
@@ -25,11 +25,13 @@
 .chat-message-row.mine p { border-color: var(--mint-pale); border-radius: 15px 5px 15px 15px; color: #153f35; background: #dff7ed; }
 
 .chat-composer { display: flex; align-items: center; gap: 9px; padding: 14px 18px; border-top: 1px solid var(--line); background: white; }
-.chat-composer button { width: 39px; height: 39px; flex: 0 0 auto; display: grid; place-items: center; border: 0; border-radius: 11px; color: #6f817a; background: #eef3f0; cursor: pointer; }
+.chat-composer button { width: 42px; height: 42px; flex: 0 0 auto; display: grid; place-items: center; border: 1px solid #dfe7e3; border-radius: 12px; color: #6f817a; background: white; cursor: pointer; }
 .chat-composer button svg { width: 18px; height: 18px; }
 .chat-composer input { min-width: 0; height: 42px; flex: 1; border: 1px solid #dfe7e3; border-radius: 13px; outline: 0; padding: 0 14px; color: var(--ink); background: #f8faf9; font-size: 12px; }
 .chat-composer input:focus { border-color: var(--mint-dark); box-shadow: 0 0 0 3px rgba(52,212,154,.1); }
-.chat-composer .chat-send-button { color: white; background: var(--ink); }
+.chat-composer .chat-send-button { color: var(--mint-dark); background: white; }
+.chat-composer button:hover { color: var(--mint-dark); background: var(--mint-pale); }
+.chat-composer button:focus-visible { outline: 2px solid var(--mint); outline-offset: 2px; }
 
 .chat-room-info { min-width: 0; overflow-y: auto; padding: 24px 20px; background: white; }
 .chat-room-info-header { padding-bottom: 21px; border-bottom: 1px solid var(--line); }
@@ -66,3 +68,15 @@
 .user-profile-modal dl div { padding: 12px; border: 1px solid var(--line); border-radius: 11px; }
 .user-profile-modal dt { color: #909d98; font-size: 8px; }
 .user-profile-modal dd { margin: 5px 0 0; color: var(--ink); font-size: 12px; font-weight: 800; }
+.user-profile-direct-button { width: 100%; height: 44px; display: flex; align-items: center; justify-content: center; gap: 7px; margin-top: 14px; border: 1px solid var(--mint-dark); border-radius: 12px; color: white; background: var(--mint-dark); font: inherit; font-size: 11px; font-weight: 800; cursor: pointer; transition: background .16s ease, transform .16s ease; }
+.user-profile-direct-button:hover, .user-profile-direct-button:focus-visible { background: #176b54; outline: none; transform: translateY(-1px); }
+.user-profile-direct-button svg { width: 16px; height: 16px; }
+
+.direct-chat-heading { display: flex; align-items: center; gap: 9px; }
+.direct-chat-heading > div { min-width: 0; }
+.direct-chat-heading h1 { margin-bottom: 3px; }
+.direct-chat-avatar { width: 34px; height: 34px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 50%; color: #23614e !important; background: #dff7ed; font-size: 10px !important; font-weight: 850; }
+.direct-chat-info { display: flex; flex-direction: column; align-items: center; padding-top: 42px; text-align: center; }
+.direct-chat-info h2 { margin: 13px 0 8px; font-size: 18px; }
+.direct-chat-info p { margin: 0; color: var(--muted); font-size: 10px; line-height: 1.6; }
+.direct-chat-info > span { margin-top: 22px; padding: 12px; border-radius: 11px; color: #73827d; background: #f3f7f5; font-size: 9px; line-height: 1.5; }

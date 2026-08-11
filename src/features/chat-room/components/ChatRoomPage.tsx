@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { ArrowLeft, ImagePlus, Search, Send, Users } from "lucide-react";
+import { ArrowLeft, ImagePlus, Send, Users } from "lucide-react";
 import type { Room } from "@/src/features/explore/types";
+import { DirectChatPage } from "./DirectChatPage";
 import { UserProfileModal, type ChatProfile } from "./UserProfileModal";
 
 type ChatRoomPageProps = {
@@ -49,6 +50,7 @@ export function ChatRoomPage({ room, onBack }: ChatRoomPageProps) {
   const [messages, setMessages] = useState(initialMessages);
   const [draft, setDraft] = useState("");
   const [selectedProfile, setSelectedProfile] = useState<ChatProfile | null>(null);
+  const [directChatProfile, setDirectChatProfile] = useState<ChatProfile | null>(null);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -62,6 +64,10 @@ export function ChatRoomPage({ room, onBack }: ChatRoomPageProps) {
     setDraft("");
   }
 
+  if (directChatProfile) {
+    return <DirectChatPage profile={directChatProfile} onBack={() => setDirectChatProfile(null)} />;
+  }
+
   return (
     <section className="chat-room-page" aria-label={`${room.title} 채팅방`}>
       <div className="chat-room-main">
@@ -73,9 +79,6 @@ export function ChatRoomPage({ room, onBack }: ChatRoomPageProps) {
             <h1>{room.title}</h1>
             <span>{room.area} · {room.people}명 참여 중</span>
           </div>
-          <button className="chat-search-button" aria-label="채팅방 메시지 검색">
-            <Search aria-hidden="true" />
-          </button>
         </header>
 
         <div className="chat-messages" aria-live="polite">
@@ -141,7 +144,14 @@ export function ChatRoomPage({ room, onBack }: ChatRoomPageProps) {
       </aside>
 
       {selectedProfile && (
-        <UserProfileModal profile={selectedProfile} onClose={() => setSelectedProfile(null)} />
+        <UserProfileModal
+          profile={selectedProfile}
+          onClose={() => setSelectedProfile(null)}
+          onStartDirectChat={() => {
+            setDirectChatProfile(selectedProfile);
+            setSelectedProfile(null);
+          }}
+        />
       )}
     </section>
   );

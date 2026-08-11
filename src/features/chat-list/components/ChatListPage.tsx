@@ -1,12 +1,17 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { MessageCircle, Search, Users } from "lucide-react";
+import { Search, Users } from "lucide-react";
 import { mockConversations } from "../data/mockConversations";
+import type { Conversation } from "../types";
 
 type ChatFilter = "전체" | "오픈채팅" | "1:1";
 
-export function ChatListPage() {
+type ChatListPageProps = {
+  onConversationOpen: (conversation: Conversation) => void;
+};
+
+export function ChatListPage({ onConversationOpen }: ChatListPageProps) {
   const [filter, setFilter] = useState<ChatFilter>("전체");
   const [selectedId, setSelectedId] = useState(1);
 
@@ -24,7 +29,6 @@ export function ChatListPage() {
           <h1>내 채팅</h1>
           <span>참여 중인 동네 대화와 1:1 메시지를 확인하세요.</span>
         </div>
-        <div className="chat-summary"><MessageCircle /><strong>읽지 않은 대화 6개</strong></div>
       </header>
 
       <div className="chat-list-toolbar">
@@ -44,7 +48,10 @@ export function ChatListPage() {
           <button
             key={conversation.id}
             className={`conversation-row ${selectedId === conversation.id ? "active" : ""}`}
-            onClick={() => setSelectedId(conversation.id)}
+            onClick={() => {
+              setSelectedId(conversation.id);
+              onConversationOpen(conversation);
+            }}
           >
             <div className="conversation-copy">
               <div className="conversation-title">

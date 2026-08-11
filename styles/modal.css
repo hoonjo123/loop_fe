@@ -38,3 +38,20 @@
 .create-room-notice { margin: -4px 0 0; color: #87958f; font-size: 10px; }
 .create-room-submit { width: 100%; height: 47px; border: 0; border-radius: 13px; color: white; background: var(--ink); font-size: 13px; font-weight: 850; cursor: pointer; }
 .create-room-submit:hover { background: #214b42; }
+
+.location-method-modal { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 20px; }
+.location-method-modal article { width: min(440px, 100%); position: relative; padding: 28px; border-radius: 24px; background: white; box-shadow: 0 28px 80px rgba(15,40,34,.3); animation: appear .22s ease-out; }
+.location-method-modal header { padding-right: 38px; }
+.location-method-modal header > span { color: var(--mint-dark); font-size: 11px; font-weight: 800; }
+.location-method-modal h2 { margin: 6px 0 7px; color: var(--ink); font-size: 23px; letter-spacing: -.04em; }
+.location-method-modal header p { margin: 0; color: var(--muted); font-size: 11px; }
+.location-method-options { display: grid; gap: 10px; margin-top: 22px; }
+.location-method-options > button { width: 100%; min-height: 72px; display: flex; align-items: center; gap: 13px; padding: 13px 15px; border: 1px solid var(--line); border-radius: 15px; color: var(--ink); background: white; text-align: left; cursor: pointer; transition: border-color .18s ease, background .18s ease, transform .18s ease; }
+.location-method-options > button:hover, .location-method-options > button:focus-visible { border-color: var(--mint-dark); background: var(--mint-pale); outline: none; transform: translateY(-1px); }
+.location-method-options > button:disabled { cursor: wait; opacity: .62; transform: none; }
+.location-method-icon { width: 42px; height: 42px; flex: 0 0 auto; display: grid; place-items: center; border-radius: 13px; color: var(--mint-dark); background: var(--mint-pale); }
+.location-method-icon svg { width: 20px; height: 20px; }
+.location-method-options > button > span:last-child { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.location-method-options strong { font-size: 13px; }
+.location-method-options small { color: var(--muted); font-size: 10px; }
+.location-method-error { margin: 12px 0 0; color: #c95345; font-size: 10px; font-weight: 650; }

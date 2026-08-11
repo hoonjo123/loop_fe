@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { MessageCircle, X } from "lucide-react";
 
 export type ChatProfile = {
   nickname: string;
@@ -12,9 +12,10 @@ export type ChatProfile = {
 type UserProfileModalProps = {
   profile: ChatProfile;
   onClose: () => void;
+  onStartDirectChat: () => void;
 };
 
-export function UserProfileModal({ profile, onClose }: UserProfileModalProps) {
+export function UserProfileModal({ profile, onClose, onStartDirectChat }: UserProfileModalProps) {
   return (
     <div className="user-profile-modal" role="dialog" aria-modal="true" aria-labelledby="user-profile-name">
       <button className="user-profile-backdrop" onClick={onClose} aria-label="사용자 정보 닫기" />
@@ -30,6 +31,10 @@ export function UserProfileModal({ profile, onClose }: UserProfileModalProps) {
           <div><dt>활동 기간</dt><dd>{profile.activity}</dd></div>
           <div><dt>함께한 대화</dt><dd>{profile.conversations}개</dd></div>
         </dl>
+        <button className="user-profile-direct-button" type="button" onClick={onStartDirectChat}>
+          <MessageCircle aria-hidden="true" />
+          1:1 대화하기
+        </button>
       </article>
     </div>
   );

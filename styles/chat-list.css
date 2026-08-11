@@ -9,8 +9,6 @@
 .chat-list-header { max-width: 920px; margin: 0 auto 25px; display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; }
 .chat-list-header h1 { margin: 0 0 8px; font-size: 31px; letter-spacing: -.05em; }
 .chat-list-header > div > span { color: #7d8d87; font-size: 12px; }
-.chat-summary { display: flex; align-items: center; gap: 8px; padding: 11px 14px; border: 1px solid #dce8e2; border-radius: 13px; color: var(--mint-dark); background: white; font-size: 11px; }
-.chat-summary svg { width: 17px; height: 17px; }
 
 .chat-list-toolbar { max-width: 920px; margin: 0 auto 13px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .chat-search { width: min(390px, 52%); height: 43px; display: flex; align-items: center; gap: 9px; padding: 0 13px; border: 1px solid #e0e8e4; border-radius: 13px; background: white; }

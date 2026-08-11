@@ -9,15 +9,6 @@ type RoomPanelProps = {
 export function RoomPanel({ selectedRegion, selectedRoomId, onRoomSelect }: RoomPanelProps) {
   return (
     <aside className="room-panel" aria-label={`${selectedRegion} 채팅방`}>
-      <div className="room-heading">
-        <div>
-          <p><span className="pulse" /> 지금 대화 중</p>
-          <h2>{selectedRegion}의 채팅방</h2>
-          <span>가까운 사람들과 가볍게 인사해보세요.</span>
-        </div>
-        <button className="sort-button">인기순</button>
-      </div>
-
       <div className="room-list">
         {rooms.map((room) => (
           <button

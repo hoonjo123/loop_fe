@@ -15,6 +15,7 @@ type KakaoMapProps = {
   onLocationSelect: (location: ApproximateLocation) => void;
   onLocationSelectCancel: () => void;
   onRoomSelect: (roomId: number) => void;
+  currentLocation: ApproximateLocation | null;
 };
 
 const roomOffsets = [
@@ -43,6 +44,7 @@ export function KakaoMap({
   onLocationSelect,
   onLocationSelectCancel,
   onRoomSelect,
+  currentLocation,
 }: KakaoMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<KakaoMapInstance | null>(null);
@@ -50,6 +52,7 @@ export function KakaoMap({
   const overlaysRef = useRef<KakaoCustomOverlayInstance[]>([]);
   const roomOverlaysRef = useRef<KakaoCustomOverlayInstance[]>([]);
   const selectedLocationOverlayRef = useRef<KakaoCustomOverlayInstance | null>(null);
+  const currentLocationOverlayRef = useRef<KakaoCustomOverlayInstance | null>(null);
   const [focusedRegion, setFocusedRegion] = useState<string | null>(null);
   const [displayMode, setDisplayMode] = useState<MapDisplayMode>("district");
   const [ready, setReady] = useState(false);
@@ -109,15 +112,15 @@ export function KakaoMap({
     let nextOverlays: KakaoCustomOverlayInstance[] = [];
 
     if (displayMode === "city") {
-      const totalCount = regions.reduce((sum, region) => sum + region.count, 0);
+      const totalRoomCount = regions.reduce((sum, region) => sum + region.roomCount, 0);
       const position = new maps.LatLng(37.5665, 126.978);
       const content = document.createElement("button");
       content.type = "button";
       content.className = "city-overlay";
-      content.setAttribute("aria-label", `서울특별시, 채팅방 ${totalCount}개`);
+      content.setAttribute("aria-label", `서울특별시, 채팅방 ${totalRoomCount}개`);
 
       const count = document.createElement("strong");
-      count.textContent = String(totalCount);
+      count.textContent = `${totalRoomCount}개`;
       const name = document.createElement("small");
       name.textContent = "서울특별시";
       content.append(count, name);
@@ -150,17 +153,10 @@ export function KakaoMap({
       const content = document.createElement("button");
       content.type = "button";
       content.className = `region-overlay ${selectedRegion === region.name ? "active" : ""}`;
-      content.setAttribute("aria-label", `${region.name}, 채팅방 ${region.count}개`);
-
-      if (region.hot) {
-        const heat = document.createElement("span");
-        heat.className = "heat";
-        heat.textContent = "활발";
-        content.appendChild(heat);
-      }
+      content.setAttribute("aria-label", `${region.name}, 채팅방 ${region.roomCount}개`);
 
       const count = document.createElement("strong");
-      count.textContent = String(region.count);
+      count.textContent = `${region.roomCount}개`;
       const name = document.createElement("small");
       name.textContent = region.name;
       content.append(count, name);
@@ -210,12 +206,19 @@ export function KakaoMap({
       );
       const content = document.createElement("button");
       content.type = "button";
-      content.className = "room-map-marker";
+      const participantDigits = Math.min(String(room.people).length, 4);
+      content.className = `room-map-marker participants-${participantDigits}-digits`;
       content.setAttribute("aria-label", `${room.title}, 참여자 ${room.people}명`);
 
       const count = document.createElement("strong");
-      count.textContent = String(room.people);
+      count.className = "room-marker-participants";
+      const personIcon = document.createElement("i");
+      personIcon.setAttribute("aria-hidden", "true");
+      const countText = document.createElement("span");
+      countText.textContent = String(room.people);
+      count.append(personIcon, countText);
       const label = document.createElement("span");
+      label.className = "room-marker-label";
       label.textContent = room.title;
       content.append(count, label);
       content.addEventListener("click", () => onRoomSelect(room.id));
@@ -238,8 +241,34 @@ export function KakaoMap({
     return () => {
       overlaysRef.current.forEach((overlay) => overlay.setMap(null));
       roomOverlaysRef.current.forEach((overlay) => overlay.setMap(null));
+      currentLocationOverlayRef.current?.setMap(null);
     };
   }, []);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    const maps = mapsApiRef.current;
+    if (!ready || !map || !maps || !currentLocation) return;
+
+    const position = new maps.LatLng(currentLocation.latitude, currentLocation.longitude);
+    map.setLevel(3);
+    map.setCenter(position);
+
+    currentLocationOverlayRef.current?.setMap(null);
+    const content = document.createElement("div");
+    content.className = "current-location-marker";
+    content.setAttribute("aria-label", "현재 위치");
+    content.innerHTML = '<span class="current-location-dot" aria-hidden="true"></span>';
+
+    currentLocationOverlayRef.current = new maps.CustomOverlay({
+      map,
+      position,
+      content,
+      xAnchor: 0.5,
+      yAnchor: 0.5,
+      zIndex: 9,
+    });
+  }, [currentLocation, ready]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -284,7 +313,7 @@ export function KakaoMap({
   }, [ready, selectedLocation]);
 
   return (
-    <div className="map-canvas">
+    <div className={`map-canvas ${isSelectingLocation ? "selecting-location" : ""}`}>
       <div ref={containerRef} className="kakao-map" aria-label="서울 지역 Kakao 지도" />
 
       {!ready && !error && <div className="map-status">지도를 불러오는 중이에요.</div>}

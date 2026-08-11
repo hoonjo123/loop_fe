@@ -2,8 +2,7 @@ export type RoomType = "영구" | "임시";
 
 export type Region = {
   name: string;
-  count: number;
-  hot?: boolean;
+  roomCount: number;
   latitude: number;
   longitude: number;
 };

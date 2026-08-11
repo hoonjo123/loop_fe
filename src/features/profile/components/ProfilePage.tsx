@@ -1,19 +1,21 @@
 import { useState, type FormEvent } from "react";
-import { MapPin, MessageCircle, Pencil, Users, X } from "lucide-react";
+import { MessageCircle, Pencil, Users, X } from "lucide-react";
 
 type Profile = {
   nickname: string;
-  area: string;
   introduction: string;
 };
 
 const initialProfile: Profile = {
   nickname: "민들레",
-  area: "마포구",
   introduction: "가까운 동네 사람들과 편하게 이야기 나누는 것을 좋아해요.",
 };
 
-export function ProfilePage() {
+type ProfilePageProps = {
+  onOpenChats: () => void;
+};
+
+export function ProfilePage({ onOpenChats }: ProfilePageProps) {
   const [profile, setProfile] = useState(initialProfile);
   const [draft, setDraft] = useState(initialProfile);
   const [editOpen, setEditOpen] = useState(false);
@@ -45,27 +47,26 @@ export function ProfilePage() {
         <div className="my-profile-avatar" aria-hidden="true">{profile.nickname.slice(0, 1)}</div>
         <div className="my-profile-identity">
           <h2>{profile.nickname}</h2>
-          <p><MapPin aria-hidden="true" /> {profile.area}에서 활동 중</p>
         </div>
 
         <p className="my-profile-introduction">
           {profile.introduction}
         </p>
 
-        <dl className="my-profile-stats">
+        <div className="my-profile-stats">
+          <button type="button" onClick={onOpenChats} aria-label="참여 중인 대화 3개, 내 채팅 목록으로 이동">
+            <span><MessageCircle aria-hidden="true" /> 참여 중인 대화</span>
+            <strong>3개</strong>
+          </button>
           <div>
-            <dt><MessageCircle aria-hidden="true" /> 참여 중인 대화</dt>
-            <dd>3개</dd>
+            <span><Users aria-hidden="true" /> 함께한 대화</span>
+            <strong>24개</strong>
           </div>
           <div>
-            <dt><Users aria-hidden="true" /> 함께한 대화</dt>
-            <dd>24개</dd>
+            <span>활동 기간</span>
+            <strong>8개월</strong>
           </div>
-          <div>
-            <dt>활동 기간</dt>
-            <dd>8개월</dd>
-          </div>
-        </dl>
+        </div>
       </article>
 
       {editOpen && (
@@ -86,10 +87,6 @@ export function ProfilePage() {
             <label>
               <span>닉네임</span>
               <input value={draft.nickname} maxLength={12} onChange={(event) => setDraft({ ...draft, nickname: event.target.value })} required />
-            </label>
-            <label>
-              <span>활동 동네</span>
-              <input value={draft.area} maxLength={20} onChange={(event) => setDraft({ ...draft, area: event.target.value })} required />
             </label>
             <label>
               <span>자기소개</span>

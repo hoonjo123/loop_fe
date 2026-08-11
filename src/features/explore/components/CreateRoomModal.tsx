@@ -5,14 +5,14 @@ import { X } from "lucide-react";
 import type { ApproximateLocation } from "../types";
 
 type CreateRoomModalProps = {
-  region: string;
+  locationLabel: string;
   location: ApproximateLocation;
   onClose: () => void;
 };
 
 type RoomType = "영구" | "임시";
 
-export function CreateRoomModal({ region, location, onClose }: CreateRoomModalProps) {
+export function CreateRoomModal({ locationLabel, location, onClose }: CreateRoomModalProps) {
   const [roomType, setRoomType] = useState<RoomType>("영구");
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -73,7 +73,7 @@ export function CreateRoomModal({ region, location, onClose }: CreateRoomModalPr
           <div className={`create-room-grid ${roomType === "영구" ? "single" : ""}`}>
             <label className="create-room-field">
               <span>대략적인 위치</span>
-              <input name="region" value={`${region} · 선택한 지점 주변`} readOnly />
+              <input name="region" value={locationLabel} readOnly />
               <input name="latitude" value={location.latitude.toFixed(3)} readOnly hidden />
               <input name="longitude" value={location.longitude.toFixed(3)} readOnly hidden />
               <small>약 100m 단위로만 위치가 표시됩니다.</small>

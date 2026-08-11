@@ -1,15 +1,15 @@
 import type { Region, Room } from "../types";
 
 export const regions: Region[] = [
-  { name: "은평구", count: 8, latitude: 37.6027, longitude: 126.9291 },
-  { name: "마포구", count: 23, hot: true, latitude: 37.5663, longitude: 126.9019 },
-  { name: "서대문구", count: 14, latitude: 37.5791, longitude: 126.9368 },
-  { name: "종로구", count: 12, latitude: 37.5735, longitude: 126.979 },
-  { name: "용산구", count: 9, latitude: 37.5326, longitude: 126.9905 },
-  { name: "성동구", count: 18, hot: true, latitude: 37.5633, longitude: 127.0371 },
-  { name: "강남구", count: 41, hot: true, latitude: 37.5172, longitude: 127.0473 },
-  { name: "송파구", count: 27, latitude: 37.5145, longitude: 127.1058 },
-  { name: "영등포구", count: 16, latitude: 37.5263, longitude: 126.8962 },
+  { name: "은평구", roomCount: 8, latitude: 37.6027, longitude: 126.9291 },
+  { name: "마포구", roomCount: 23, latitude: 37.5663, longitude: 126.9019 },
+  { name: "서대문구", roomCount: 14, latitude: 37.5791, longitude: 126.9368 },
+  { name: "종로구", roomCount: 12, latitude: 37.5735, longitude: 126.979 },
+  { name: "용산구", roomCount: 9, latitude: 37.5326, longitude: 126.9905 },
+  { name: "성동구", roomCount: 18, latitude: 37.5633, longitude: 127.0371 },
+  { name: "강남구", roomCount: 41, latitude: 37.5172, longitude: 127.0473 },
+  { name: "송파구", roomCount: 27, latitude: 37.5145, longitude: 127.1058 },
+  { name: "영등포구", roomCount: 16, latitude: 37.5263, longitude: 126.8962 },
 ];
 
 export const rooms: Room[] = [
