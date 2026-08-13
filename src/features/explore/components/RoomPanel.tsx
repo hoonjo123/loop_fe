@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { ChevronsDown, ChevronsUp } from "lucide-react";
-import { rooms } from "../data/mockData";
+import type { ChatRoom } from "@/src/features/chat/api/chatApi";
 
 type RoomPanelProps = {
   selectedRegion: string;
   selectedRoomId: number | null;
+  rooms: ChatRoom[];
+  loading: boolean;
   onRoomSelect: (roomId: number) => void;
 };
 
-export function RoomPanel({ selectedRegion, selectedRoomId, onRoomSelect }: RoomPanelProps) {
+export function RoomPanel({ selectedRegion, selectedRoomId, rooms, loading, onRoomSelect }: RoomPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
@@ -25,6 +27,8 @@ export function RoomPanel({ selectedRegion, selectedRoomId, onRoomSelect }: Room
       </button>
 
       <div className="room-list" id="mobile-room-list">
+        {loading && <p className="room-list-state">채팅방을 불러오는 중이에요.</p>}
+        {!loading && rooms.length === 0 && <p className="room-list-state">이 지역에는 아직 채팅방이 없어요.</p>}
         {rooms.map((room) => (
           <button
             className={`room-card ${selectedRoomId === room.id ? "active" : ""}`}
@@ -33,21 +37,21 @@ export function RoomPanel({ selectedRegion, selectedRoomId, onRoomSelect }: Room
           >
             <div className="room-copy">
               <div className="room-meta">
-                <span className={room.type === "임시" ? "temporary" : "permanent"}>{room.type}</span>
-                <small>{room.area}</small>
+                <span className={room.durationType === "TEMPORARY" ? "temporary" : "permanent"}>
+                  {room.durationType === "TEMPORARY" ? "임시" : "영구"}
+                </span>
+                <small>{room.regionLabel}</small>
               </div>
               <h3>{room.title}</h3>
-              <p>{room.message}</p>
+              <p>{room.description}</p>
               <div className="room-bottom">
-                <span>● {room.people}명</span>
-                <time>{room.time}</time>
+                <span>● {room.memberCount}명</span>
+                <time>{room.expiresAt ? `${new Date(room.expiresAt).toLocaleString("ko-KR")} 종료` : "계속되는 대화"}</time>
               </div>
             </div>
           </button>
         ))}
       </div>
-
-      <button className="more-button">채팅방 더 보기</button>
     </aside>
   );
 }

@@ -2,14 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ChatListPage } from "@/src/features/chat-list/components/ChatListPage";
-import type { Conversation } from "@/src/features/chat-list/types";
+import { chatApi, type ChatRoom, type Conversation } from "@/src/features/chat/api/chatApi";
 import { ChatRoomPage } from "@/src/features/chat-room/components/ChatRoomPage";
-import { DirectChatPage } from "@/src/features/chat-room/components/DirectChatPage";
-import type { ChatProfile } from "@/src/features/chat-room/components/UserProfileModal";
 import { ProfilePage } from "@/src/features/profile/components/ProfilePage";
 import { profileApi, type UserProfile } from "@/src/features/profile/api/profileApi";
-import { rooms } from "../data/mockData";
-import type { ApproximateLocation, Room } from "../types";
+import type { ApproximateLocation } from "../types";
 import { AppHeader } from "./AppHeader";
 import { CreateRoomModal } from "./CreateRoomModal";
 import { LocationMethodModal } from "./LocationMethodModal";
@@ -26,8 +23,7 @@ type ExplorePageProps = {
 export function ExplorePage({ onLogout }: ExplorePageProps) {
   const [selectedRegion, setSelectedRegion] = useState("마포구");
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
-  const [openedRoom, setOpenedRoom] = useState<Room | null>(null);
-  const [directChatProfile, setDirectChatProfile] = useState<ChatProfile | null>(null);
+  const [openedRoom, setOpenedRoom] = useState<ChatRoom | null>(null);
   const [roomBackView, setRoomBackView] = useState<AppView>("explore");
   const [createRoomOpen, setCreateRoomOpen] = useState(false);
   const [locationMethodOpen, setLocationMethodOpen] = useState(false);
@@ -38,6 +34,8 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
   const [suggestionOpen, setSuggestionOpen] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [profileError, setProfileError] = useState("");
+  const [rooms, setRooms] = useState<ChatRoom[]>([]);
+  const [roomsLoading, setRoomsLoading] = useState(true);
 
   useEffect(() => {
     profileApi.getMine()
@@ -47,9 +45,19 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
       });
   }, []);
 
+  useEffect(() => {
+    chatApi.getOpenRooms()
+      .then(setRooms)
+      .finally(() => setRoomsLoading(false));
+  }, []);
+
   const selectedRoom = useMemo(
     () => rooms.find((room) => room.id === selectedRoomId),
-    [selectedRoomId],
+    [rooms, selectedRoomId],
+  );
+  const selectedRegionRooms = useMemo(
+    () => rooms.filter((room) => room.regionLabel?.includes(selectedRegion)),
+    [rooms, selectedRegion],
   );
   const startCreateRoom = useCallback(() => {
     setActiveView("explore");
@@ -90,33 +98,9 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
     setSelectedLocation(null);
   }, []);
 
-  const openConversation = useCallback((conversation: Conversation) => {
-    if (conversation.type === "DIRECT") {
-      setDirectChatProfile({
-        nickname: conversation.title,
-        initial: conversation.title.slice(0, 1),
-        area: "",
-        introduction: "1:1 대화를 나누고 있는 동네 이웃이에요.",
-        activity: "",
-        conversations: 0,
-      });
-      setOpenedRoom(null);
-      setActiveView("room");
-      return;
-    }
-
-    const room = rooms.find((item) => item.title === conversation.title) ?? {
-      id: 1000 + conversation.id,
-      title: conversation.title,
-      area: conversation.area,
-      type: "영구" as const,
-      people: conversation.people ?? 1,
-      message: conversation.message,
-      time: conversation.time,
-    };
-
+  const openConversation = useCallback(async (conversation: Conversation) => {
+    const room = await chatApi.getRoom(conversation.roomId);
     setOpenedRoom(room);
-    setDirectChatProfile(null);
     setRoomBackView("chats");
     setActiveView("room");
   }, []);
@@ -143,11 +127,14 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
               onLocationSelect={handleLocationSelect}
               onLocationSelectCancel={cancelLocationSelect}
               onRoomSelect={setSelectedRoomId}
+              rooms={rooms}
             />
             <RoomPanel
               selectedRegion={selectedRegion}
               selectedRoomId={selectedRoomId}
               onRoomSelect={setSelectedRoomId}
+              rooms={selectedRegionRooms}
+              loading={roomsLoading}
             />
           </>
         ) : activeView === "chats" ? (
@@ -158,16 +145,14 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
             loadError={profileError}
             onProfileChange={setProfile}
           />
-        ) : directChatProfile ? (
-          <DirectChatPage
-            profile={directChatProfile}
-            onBack={() => {
-              setDirectChatProfile(null);
-              setActiveView("chats");
-            }}
+        ) : openedRoom && profile ? (
+          <ChatRoomPage
+            key={openedRoom.id}
+            room={openedRoom}
+            currentUserId={profile.id}
+            onBack={() => setActiveView(roomBackView)}
+            onRoomChange={setOpenedRoom}
           />
-        ) : openedRoom ? (
-          <ChatRoomPage key={openedRoom.id} room={openedRoom} onBack={() => setActiveView(roomBackView)} />
         ) : (
           <ChatListPage onConversationOpen={openConversation} />
         )}
@@ -194,11 +179,13 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
           room={selectedRoom}
           onClose={() => setSelectedRoomId(null)}
           onJoin={() => {
-            setOpenedRoom(selectedRoom);
-            setDirectChatProfile(null);
-            setRoomBackView("explore");
-            setSelectedRoomId(null);
-            setActiveView("room");
+            void chatApi.joinRoom(selectedRoom.id).then((joinedRoom) => {
+              setRooms((current) => current.map((room) => room.id === joinedRoom.id ? joinedRoom : room));
+              setOpenedRoom(joinedRoom);
+              setRoomBackView("explore");
+              setSelectedRoomId(null);
+              setActiveView("room");
+            });
           }}
         />
       )}
@@ -207,9 +194,17 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
 
       {createRoomOpen && selectedLocation && (
         <CreateRoomModal
-          locationLabel={locationMethod === "current" ? "현재 위치 주변" : `${selectedRegion} · 선택한 지점 주변`}
+          locationLabel={locationMethod === "current" ? `${selectedRegion} · 현재 위치 주변` : `${selectedRegion} · 선택한 지점 주변`}
           location={selectedLocation}
           onClose={closeCreateRoom}
+          onCreated={(room) => {
+            setRooms((current) => [room, ...current]);
+            setCreateRoomOpen(false);
+            setSelectedLocation(null);
+            setOpenedRoom(room);
+            setRoomBackView("explore");
+            setActiveView("room");
+          }}
         />
       )}
     </main>

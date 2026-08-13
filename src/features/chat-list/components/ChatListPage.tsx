@@ -1,9 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, Users } from "lucide-react";
-import { mockConversations } from "../data/mockConversations";
-import type { Conversation } from "../types";
+import { chatApi, type Conversation } from "@/src/features/chat/api/chatApi";
 
 type ChatFilter = "전체" | "오픈채팅" | "1:1";
 
@@ -13,12 +12,26 @@ type ChatListPageProps = {
 
 export function ChatListPage({ onConversationOpen }: ChatListPageProps) {
   const [filter, setFilter] = useState<ChatFilter>("전체");
+  const [query, setQuery] = useState("");
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [error, setError] = useState("");
 
-  const conversations = useMemo(() => {
-    if (filter === "오픈채팅") return mockConversations.filter((item) => item.type === "OPEN");
-    if (filter === "1:1") return mockConversations.filter((item) => item.type === "DIRECT");
-    return mockConversations;
-  }, [filter]);
+  useEffect(() => {
+    chatApi.getConversations()
+      .then(setConversations)
+      .catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "채팅 목록을 불러오지 못했습니다."));
+  }, []);
+
+  const filteredConversations = useMemo(() => conversations.filter((item) => {
+    const matchesType = filter === "전체"
+      || (filter === "오픈채팅" && item.roomType === "OPEN")
+      || (filter === "1:1" && item.roomType === "DIRECT");
+    const keyword = query.trim().toLocaleLowerCase();
+    const matchesQuery = !keyword
+      || item.title.toLocaleLowerCase().includes(keyword)
+      || item.lastMessage.toLocaleLowerCase().includes(keyword);
+    return matchesType && matchesQuery;
+  }), [conversations, filter, query]);
 
   return (
     <section className="chat-list-page" aria-label="내 채팅 목록">
@@ -33,7 +46,7 @@ export function ChatListPage({ onConversationOpen }: ChatListPageProps) {
       <div className="chat-list-toolbar">
         <div className="chat-search">
           <Search />
-          <input aria-label="채팅 검색" placeholder="채팅방 또는 메시지 검색" />
+          <input value={query} onChange={(event) => setQuery(event.target.value)} aria-label="채팅 검색" placeholder="채팅방 또는 메시지 검색" />
         </div>
         <div className="chat-tabs" aria-label="채팅 유형">
           {(["전체", "오픈채팅", "1:1"] as ChatFilter[]).map((item) => (
@@ -43,25 +56,27 @@ export function ChatListPage({ onConversationOpen }: ChatListPageProps) {
       </div>
 
       <div className="conversation-list">
-        {conversations.map((conversation) => (
+        {error && <p className="conversation-state" role="alert">{error}</p>}
+        {!error && filteredConversations.length === 0 && <p className="conversation-state">참여 중인 채팅이 없습니다.</p>}
+        {filteredConversations.map((conversation) => (
           <button
-            key={conversation.id}
+            key={conversation.roomId}
             className="conversation-row"
             onClick={() => onConversationOpen(conversation)}
           >
             <div className="conversation-copy">
               <div className="conversation-title">
                 <strong>{conversation.title}</strong>
-                <time>{conversation.time}</time>
+                <time>{formatRelativeTime(conversation.lastMessageAt)}</time>
               </div>
               <div className="conversation-meta">
-                <span className={conversation.type === "OPEN" ? "open" : "direct"}>{conversation.type === "OPEN" ? "오픈채팅" : "1:1"}</span>
-                <small>{conversation.area}</small>
-                {conversation.people && <small className="member-count"><Users /> {conversation.people}명</small>}
+                <span className={conversation.roomType === "OPEN" ? "open" : "direct"}>{conversation.roomType === "OPEN" ? "오픈채팅" : "1:1"}</span>
+                <small>{conversation.regionLabel}</small>
+                {conversation.roomType === "OPEN" && <small className="member-count"><Users /> {conversation.memberCount}명</small>}
               </div>
               <div className="conversation-message">
-                <p>{conversation.message}</p>
-                {conversation.unread > 0 && <b>{conversation.unread}</b>}
+                <p>{conversation.lastMessage}</p>
+                {conversation.unreadCount > 0 && <b>{conversation.unreadCount > 99 ? "99+" : conversation.unreadCount}</b>}
               </div>
             </div>
           </button>
@@ -69,4 +84,14 @@ export function ChatListPage({ onConversationOpen }: ChatListPageProps) {
       </div>
     </section>
   );
+}
+
+function formatRelativeTime(value: string | null) {
+  if (!value) return "";
+  const difference = Date.now() - new Date(value).getTime();
+  const minutes = Math.floor(difference / 60_000);
+  if (minutes < 1) return "방금";
+  if (minutes < 60) return `${minutes}분`;
+  if (minutes < 1440) return `${Math.floor(minutes / 60)}시간`;
+  return new Intl.DateTimeFormat("ko-KR", { month: "numeric", day: "numeric" }).format(new Date(value));
 }

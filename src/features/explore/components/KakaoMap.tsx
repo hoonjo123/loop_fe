@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import { env } from "@/src/config/env";
+import type { ChatRoom } from "@/src/features/chat/api/chatApi";
 import type { KakaoCustomOverlayInstance, KakaoMapInstance, KakaoMapMouseEvent, KakaoMapsApi } from "@/src/shared/types/kakao-maps";
-import { regions, rooms } from "../data/mockData";
+import { regions } from "../data/regions";
 import type { ApproximateLocation } from "../types";
 import { loadKakaoMaps } from "../lib/loadKakaoMaps";
 
@@ -17,14 +18,8 @@ type KakaoMapProps = {
   onLocationSelectCancel: () => void;
   onRoomSelect: (roomId: number) => void;
   currentLocation: ApproximateLocation | null;
+  rooms: ChatRoom[];
 };
-
-const roomOffsets = [
-  { latitude: 0.012, longitude: -0.014 },
-  { latitude: -0.009, longitude: 0.011 },
-  { latitude: 0.004, longitude: 0.018 },
-  { latitude: -0.015, longitude: -0.002 },
-];
 
 const CITY_LEVEL = 9;
 const DISTRICT_LEVEL = 6;
@@ -48,6 +43,7 @@ export function KakaoMap({
   onLocationSelectCancel,
   onRoomSelect,
   currentLocation,
+  rooms,
 }: KakaoMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<KakaoMapInstance | null>(null);
@@ -129,7 +125,7 @@ export function KakaoMap({
     let nextOverlays: KakaoCustomOverlayInstance[] = [];
 
     if (displayMode === "city") {
-      const totalRoomCount = regions.reduce((sum, region) => sum + region.roomCount, 0);
+      const totalRoomCount = rooms.length;
       const position = new maps.LatLng(37.5665, 126.978);
       const content = document.createElement("button");
       content.type = "button";
@@ -170,10 +166,11 @@ export function KakaoMap({
       const content = document.createElement("button");
       content.type = "button";
       content.className = `region-overlay ${selectedRegion === region.name ? "active" : ""}`;
-      content.setAttribute("aria-label", `${region.name}, 채팅방 ${region.roomCount}개`);
+      const roomCount = rooms.filter((room) => room.regionLabel?.includes(region.name)).length;
+      content.setAttribute("aria-label", `${region.name}, 채팅방 ${roomCount}개`);
 
       const count = document.createElement("strong");
-      count.textContent = `${region.roomCount}개`;
+      count.textContent = `${roomCount}개`;
       const name = document.createElement("small");
       name.textContent = region.name;
       content.append(count, name);
@@ -197,7 +194,7 @@ export function KakaoMap({
 
     overlaysRef.current = nextOverlays;
     previousOverlays.forEach((overlay) => overlay.setMap(null));
-  }, [displayMode, onRegionChange, ready, selectedRegion]);
+  }, [displayMode, onRegionChange, ready, rooms, selectedRegion]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -215,28 +212,30 @@ export function KakaoMap({
     const region = regions.find((item) => item.name === detailRegion);
     if (!region) return;
 
-    nextOverlays = rooms.map((room, index) => {
-      const offset = roomOffsets[index % roomOffsets.length];
+    nextOverlays = rooms
+      .filter((room) => room.regionLabel?.includes(detailRegion))
+      .filter((room) => room.latitude !== null && room.longitude !== null)
+      .map((room) => {
       const position = new maps.LatLng(
-        region.latitude + offset.latitude,
-        region.longitude + offset.longitude,
+        room.latitude!,
+        room.longitude!,
       );
       const content = document.createElement("button");
       content.type = "button";
-      const participantDigits = Math.min(String(room.people).length, 4);
+      const participantDigits = Math.min(String(room.memberCount).length, 4);
       content.className = `room-map-marker participants-${participantDigits}-digits`;
-      content.setAttribute("aria-label", `${room.title}, 참여자 ${room.people}명`);
+      content.setAttribute("aria-label", `${room.title}, 참여자 ${room.memberCount}명`);
 
       const count = document.createElement("strong");
       count.className = "room-marker-participants";
       const personIcon = document.createElement("i");
       personIcon.setAttribute("aria-hidden", "true");
       const countText = document.createElement("span");
-      countText.textContent = String(room.people);
+      countText.textContent = String(room.memberCount);
       count.append(personIcon, countText);
       const label = document.createElement("span");
       label.className = "room-marker-label";
-      label.textContent = room.title;
+      label.textContent = room.title ?? "1:1 대화";
       content.append(count, label);
       content.addEventListener("click", () => onRoomSelect(room.id));
 
@@ -248,11 +247,11 @@ export function KakaoMap({
         yAnchor: 0.5,
         zIndex: 5,
       });
-    });
+      });
 
     roomOverlaysRef.current = nextOverlays;
     previousOverlays.forEach((overlay) => overlay.setMap(null));
-  }, [displayMode, focusedRegion, onRoomSelect, ready, selectedRegion]);
+  }, [displayMode, focusedRegion, onRoomSelect, ready, rooms, selectedRegion]);
 
   useEffect(() => {
     return () => {

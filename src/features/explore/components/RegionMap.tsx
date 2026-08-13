@@ -3,6 +3,7 @@ import { useState } from "react";
 import { KakaoMap } from "./KakaoMap";
 import { getCurrentLocation, getCurrentLocationErrorMessage } from "../lib/getCurrentLocation";
 import type { ApproximateLocation } from "../types";
+import type { ChatRoom } from "@/src/features/chat/api/chatApi";
 
 type LocationStatus = "idle" | "loading" | "error";
 
@@ -14,6 +15,7 @@ type RegionMapProps = {
   onLocationSelect: (location: ApproximateLocation) => void;
   onLocationSelectCancel: () => void;
   onRoomSelect: (roomId: number) => void;
+  rooms: ChatRoom[];
 };
 
 export function RegionMap({
@@ -24,6 +26,7 @@ export function RegionMap({
   onLocationSelect,
   onLocationSelectCancel,
   onRoomSelect,
+  rooms,
 }: RegionMapProps) {
   const [currentLocation, setCurrentLocation] = useState<ApproximateLocation | null>(null);
   const [locationStatus, setLocationStatus] = useState<LocationStatus>("idle");
@@ -75,6 +78,7 @@ export function RegionMap({
         onLocationSelectCancel={onLocationSelectCancel}
         onRoomSelect={onRoomSelect}
         currentLocation={currentLocation}
+        rooms={rooms}
       />
     </section>
   );

@@ -3,21 +3,45 @@
 import { useState, type FormEvent } from "react";
 import { X } from "lucide-react";
 import type { ApproximateLocation } from "../types";
+import { chatApi, type ChatRoom } from "@/src/features/chat/api/chatApi";
 
 type CreateRoomModalProps = {
   locationLabel: string;
   location: ApproximateLocation;
   onClose: () => void;
+  onCreated: (room: ChatRoom) => void;
 };
 
 type RoomType = "영구" | "임시";
 
-export function CreateRoomModal({ locationLabel, location, onClose }: CreateRoomModalProps) {
+export function CreateRoomModal({ locationLabel, location, onClose, onCreated }: CreateRoomModalProps) {
   const [roomType, setRoomType] = useState<RoomType>("영구");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    onClose();
+    const form = new FormData(event.currentTarget);
+    const expirationOption = String(form.get("expiresAt") ?? "24시간 후");
+    const hours = expirationOption === "2시간 후" ? 2 : 24;
+    setSubmitting(true);
+    setError("");
+    try {
+      const room = await chatApi.createRoom({
+        durationType: roomType === "임시" ? "TEMPORARY" : "PERMANENT",
+        title: String(form.get("title")),
+        description: String(form.get("description")),
+        regionLabel: String(form.get("region")),
+        latitude: location.latitude,
+        longitude: location.longitude,
+        expiresAt: roomType === "임시" ? new Date(Date.now() + hours * 60 * 60 * 1000).toISOString() : null,
+      });
+      onCreated(room);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "채팅방을 만들지 못했습니다.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -82,9 +106,8 @@ export function CreateRoomModal({ locationLabel, location, onClose }: CreateRoom
             {roomType === "임시" && (
               <label className="create-room-field">
                 <span>종료 시간</span>
-                <select name="expiresAt" defaultValue="오늘 자정">
+                <select name="expiresAt" defaultValue="24시간 후">
                   <option>2시간 후</option>
-                  <option>오늘 자정</option>
                   <option>24시간 후</option>
                 </select>
               </label>
@@ -92,7 +115,10 @@ export function CreateRoomModal({ locationLabel, location, onClose }: CreateRoom
           </div>
 
           <p className="create-room-notice">정확한 위치는 다른 사용자에게 공개되지 않아요.</p>
-          <button className="create-room-submit" type="submit">채팅방 만들기</button>
+          {error && <p className="create-room-error" role="alert">{error}</p>}
+          <button className="create-room-submit" type="submit" disabled={submitting}>
+            {submitting ? "만드는 중..." : "채팅방 만들기"}
+          </button>
         </form>
       </article>
     </div>

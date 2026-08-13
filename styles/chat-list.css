@@ -20,6 +20,7 @@
 .chat-tabs button.active { color: white; background: var(--ink); }
 
 .conversation-list { max-width: 920px; margin: 0 auto; border: 1px solid #e1e8e5; border-radius: 20px; overflow: hidden; background: white; box-shadow: 0 16px 40px rgba(38,70,58,.05); }
+.conversation-state { margin: 0; padding: 34px 20px; color: #7d8d87; font-size: 12px; text-align: center; }
 .conversation-row { width: 100%; min-height: 92px; border: 0; border-bottom: 1px solid #edf1ef; padding: 17px 19px; display: flex; align-items: center; gap: 14px; text-align: left; background: white; cursor: pointer; transition: background .16s ease; }
 .conversation-row:last-child { border-bottom: 0; }
 .conversation-row:hover { background: #f2f8f5; }

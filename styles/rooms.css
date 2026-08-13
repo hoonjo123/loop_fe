@@ -1,6 +1,7 @@
 .room-panel { min-width: 0; background: white; border-left: 1px solid var(--line); display: flex; flex-direction: column; overflow: hidden; }
 .room-panel-toggle { display: none; }
 .room-list { flex: 1; overflow-y: auto; padding: 12px 13px 8px; }
+.room-list-state { margin: 0; padding: 28px 12px; color: #7d8d87; font-size: 11px; text-align: center; }
 .room-card { width: 100%; border: 1px solid transparent; border-bottom-color: #edf1ef; background: white; padding: 14px 10px; display: flex; gap: 12px; text-align: left; cursor: pointer; border-radius: 14px; transition: .18s ease; }
 .room-card:hover, .room-card.active { background: #f5faf7; border-color: #dceee6; transform: translateY(-1px); }
 .room-copy { min-width: 0; flex: 1; }
