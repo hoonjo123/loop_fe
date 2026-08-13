@@ -42,7 +42,18 @@ function App() {
     }} />;
   }
 
-  return <ExplorePage />;
+  async function handleLogout() {
+    try {
+      await authApi.logout();
+      sessionStorage.removeItem("loop_access_token");
+      sessionStorage.removeItem("loop_refresh_token");
+      setTokens(null);
+    } catch {
+      window.alert("로그아웃에 실패했습니다. 잠시 후 다시 시도해주세요.");
+    }
+  }
+
+  return <ExplorePage onLogout={handleLogout} />;
 }
 
 createRoot(document.getElementById("root")!).render(

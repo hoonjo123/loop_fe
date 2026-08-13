@@ -31,7 +31,7 @@ export const authApi = {
   confirmVerificationCode: (email: string, code: string) => request<void>("/auth/email-verifications/confirm", { email, code }),
   signUp: (email: string, password: string, nickname: string) => request<TokenPair>("/auth/sign-up", { email, password, nickname }),
   login: (email: string, password: string) => request<TokenPair>("/auth/login", { email, password }),
-  logout: (refreshToken: string) => request<void>("/auth/logout", { refreshToken }),
+  logout: () => request<void>("/auth/logout"),
   session: () => fetch(`${apiBaseUrl}/auth/session`, { credentials: "include" }),
   refreshFromCookie: () => fetch(`${apiBaseUrl}/auth/refresh/cookie`, {
     method: "POST",

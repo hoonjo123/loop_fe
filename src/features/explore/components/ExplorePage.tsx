@@ -18,7 +18,11 @@ import { RoomPanel } from "./RoomPanel";
 import { RoomPreview } from "./RoomPreview";
 import { SuggestionModal } from "./SuggestionModal";
 
-export function ExplorePage() {
+type ExplorePageProps = {
+  onLogout: () => void;
+};
+
+export function ExplorePage({ onLogout }: ExplorePageProps) {
   const [selectedRegion, setSelectedRegion] = useState("마포구");
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
   const [openedRoom, setOpenedRoom] = useState<Room | null>(null);
@@ -111,7 +115,7 @@ export function ExplorePage() {
       <AppHeader
         onProfileClick={() => setActiveView("profile")}
         onSuggestionClick={() => setSuggestionOpen(true)}
-        onLogout={() => window.alert("로그아웃은 로그인 기능 연결 후 사용할 수 있습니다.")}
+        onLogout={onLogout}
       />
 
       <section className="workspace">
