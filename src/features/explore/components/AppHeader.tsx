@@ -4,12 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Lightbulb, LogOut, Search, UserRound } from "lucide-react";
 
 type AppHeaderProps = {
+  nickname: string;
+  profileImageUrl: string | null;
   onProfileClick: () => void;
   onSuggestionClick: () => void;
   onLogout: () => void;
 };
 
-export function AppHeader({ onProfileClick, onSuggestionClick, onLogout }: AppHeaderProps) {
+export function AppHeader({ nickname, profileImageUrl, onProfileClick, onSuggestionClick, onLogout }: AppHeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLElement>(null);
@@ -61,8 +63,12 @@ export function AppHeader({ onProfileClick, onSuggestionClick, onLogout }: AppHe
           aria-expanded={profileMenuOpen}
           aria-controls="profile-dropdown"
         >
-          <span>민</span>
-          <b>민들레</b>
+          <span>
+            {profileImageUrl
+              ? <img src={profileImageUrl} alt="" />
+              : nickname.slice(0, 1)}
+          </span>
+          <b>{nickname}</b>
           <ChevronDown className="profile-chevron" aria-hidden="true" />
         </button>
 

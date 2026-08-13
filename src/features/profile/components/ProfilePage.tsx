@@ -1,42 +1,76 @@
 import { useState, type FormEvent } from "react";
-import { MessageCircle, Pencil, Users, X } from "lucide-react";
-
-type Profile = {
-  nickname: string;
-  introduction: string;
-};
-
-const initialProfile: Profile = {
-  nickname: "민들레",
-  introduction: "가까운 동네 사람들과 편하게 이야기 나누는 것을 좋아해요.",
-};
+import { CalendarDays, Mail, MapPin, Pencil, ShieldCheck, X } from "lucide-react";
+import { profileApi, type ProfileUpdate, type UserProfile } from "@/src/features/profile/api/profileApi";
 
 type ProfilePageProps = {
-  onOpenChats: () => void;
+  profile: UserProfile | null;
+  loadError: string;
+  onProfileChange: (profile: UserProfile) => void;
 };
 
-export function ProfilePage({ onOpenChats }: ProfilePageProps) {
-  const [profile, setProfile] = useState(initialProfile);
-  const [draft, setDraft] = useState(initialProfile);
+const emptyDraft: ProfileUpdate = {
+  nickname: "",
+  profileImageUrl: null,
+  introduction: null,
+  activityArea: null,
+};
+
+export function ProfilePage({ profile, loadError, onProfileChange }: ProfilePageProps) {
+  const [draft, setDraft] = useState<ProfileUpdate>(emptyDraft);
   const [editOpen, setEditOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
+  if (!profile) {
+    return (
+      <section className="profile-page" aria-labelledby="profile-title">
+        <header className="profile-page-header">
+          <p className="eyebrow">MY PROFILE</p>
+          <h1 id="profile-title">나의 프로필</h1>
+          <span>{loadError || "프로필 정보를 불러오는 중입니다."}</span>
+        </header>
+      </section>
+    );
+  }
 
   const openEditor = () => {
-    setDraft(profile);
+    setDraft({
+      nickname: profile.nickname,
+      profileImageUrl: profile.profileImageUrl,
+      introduction: profile.introduction,
+      activityArea: profile.activityArea,
+    });
+    setSaveError("");
     setEditOpen(true);
   };
 
-  const saveProfile = (event: FormEvent<HTMLFormElement>) => {
+  const saveProfile = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setProfile(draft);
-    setEditOpen(false);
+    setSaving(true);
+    setSaveError("");
+    try {
+      const updated = await profileApi.updateMine(draft);
+      onProfileChange(updated);
+      setEditOpen(false);
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : "프로필을 수정하지 못했습니다.");
+    } finally {
+      setSaving(false);
+    }
   };
+
+  const joinedAt = new Intl.DateTimeFormat("ko-KR", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(new Date(profile.createdAt));
 
   return (
     <section className="profile-page" aria-labelledby="profile-title">
       <header className="profile-page-header">
         <p className="eyebrow">MY PROFILE</p>
         <h1 id="profile-title">나의 프로필</h1>
-        <span>동네에서 사용하는 내 정보와 활동을 확인하세요.</span>
+        <span>동네에서 사용하는 내 정보를 확인하고 관리하세요.</span>
       </header>
 
       <article className="my-profile-card">
@@ -44,29 +78,26 @@ export function ProfilePage({ onOpenChats }: ProfilePageProps) {
           <Pencil aria-hidden="true" />
         </button>
 
-        <div className="my-profile-avatar" aria-hidden="true">{profile.nickname.slice(0, 1)}</div>
+        <div className="my-profile-avatar" aria-hidden="true">
+          {profile.profileImageUrl
+            ? <img src={profile.profileImageUrl} alt="" />
+            : profile.nickname.slice(0, 1)}
+        </div>
         <div className="my-profile-identity">
           <h2>{profile.nickname}</h2>
+          <span>{profile.activityArea || "활동 지역 미설정"}</span>
         </div>
 
-        <p className="my-profile-introduction">
-          {profile.introduction}
+        <p className={`my-profile-introduction ${profile.introduction ? "" : "empty"}`}>
+          {profile.introduction || "아직 등록된 자기소개가 없습니다."}
         </p>
 
-        <div className="my-profile-stats">
-          <button type="button" onClick={onOpenChats} aria-label="참여 중인 대화 3개, 내 채팅 목록으로 이동">
-            <span><MessageCircle aria-hidden="true" /> 참여 중인 대화</span>
-            <strong>3개</strong>
-          </button>
-          <div>
-            <span><Users aria-hidden="true" /> 함께한 대화</span>
-            <strong>24개</strong>
-          </div>
-          <div>
-            <span>활동 기간</span>
-            <strong>8개월</strong>
-          </div>
-        </div>
+        <dl className="my-profile-details">
+          <div><dt><Mail aria-hidden="true" /> 이메일</dt><dd>{profile.email}</dd></div>
+          <div><dt><MapPin aria-hidden="true" /> 활동 지역</dt><dd>{profile.activityArea || "미설정"}</dd></div>
+          <div><dt><CalendarDays aria-hidden="true" /> 가입일</dt><dd>{joinedAt}</dd></div>
+          <div><dt><ShieldCheck aria-hidden="true" /> 로그인 방식</dt><dd>{profile.authProvider === "GOOGLE" ? "Google" : "이메일"}</dd></div>
+        </dl>
       </article>
 
       {editOpen && (
@@ -89,11 +120,22 @@ export function ProfilePage({ onOpenChats }: ProfilePageProps) {
               <input value={draft.nickname} maxLength={12} onChange={(event) => setDraft({ ...draft, nickname: event.target.value })} required />
             </label>
             <label>
-              <span>자기소개</span>
-              <textarea value={draft.introduction} maxLength={100} rows={4} onChange={(event) => setDraft({ ...draft, introduction: event.target.value })} required />
+              <span>활동 지역</span>
+              <input value={draft.activityArea ?? ""} maxLength={100} placeholder="예: 서울 마포구" onChange={(event) => setDraft({ ...draft, activityArea: event.target.value })} />
+            </label>
+            <label>
+              <span>프로필 이미지 URL</span>
+              <input type="url" value={draft.profileImageUrl ?? ""} maxLength={500} placeholder="https://" onChange={(event) => setDraft({ ...draft, profileImageUrl: event.target.value })} />
+            </label>
+            <label>
+              <span>한 줄 소개</span>
+              <textarea value={draft.introduction ?? ""} maxLength={100} rows={4} onChange={(event) => setDraft({ ...draft, introduction: event.target.value })} />
             </label>
 
-            <button className="profile-save-button" type="submit">저장하기</button>
+            {saveError && <p className="profile-save-error" role="alert">{saveError}</p>}
+            <button className="profile-save-button" type="submit" disabled={saving}>
+              {saving ? "저장 중..." : "저장하기"}
+            </button>
           </form>
         </div>
       )}

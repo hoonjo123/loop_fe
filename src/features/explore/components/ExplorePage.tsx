@@ -1,12 +1,13 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ChatListPage } from "@/src/features/chat-list/components/ChatListPage";
 import type { Conversation } from "@/src/features/chat-list/types";
 import { ChatRoomPage } from "@/src/features/chat-room/components/ChatRoomPage";
 import { DirectChatPage } from "@/src/features/chat-room/components/DirectChatPage";
 import type { ChatProfile } from "@/src/features/chat-room/components/UserProfileModal";
 import { ProfilePage } from "@/src/features/profile/components/ProfilePage";
+import { profileApi, type UserProfile } from "@/src/features/profile/api/profileApi";
 import { rooms } from "../data/mockData";
 import type { ApproximateLocation, Room } from "../types";
 import { AppHeader } from "./AppHeader";
@@ -35,6 +36,16 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
   const [selectedLocation, setSelectedLocation] = useState<ApproximateLocation | null>(null);
   const [activeView, setActiveView] = useState<AppView>("explore");
   const [suggestionOpen, setSuggestionOpen] = useState(false);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profileError, setProfileError] = useState("");
+
+  useEffect(() => {
+    profileApi.getMine()
+      .then(setProfile)
+      .catch((error: unknown) => {
+        setProfileError(error instanceof Error ? error.message : "프로필 정보를 불러오지 못했습니다.");
+      });
+  }, []);
 
   const selectedRoom = useMemo(
     () => rooms.find((room) => room.id === selectedRoomId),
@@ -113,6 +124,8 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
   return (
     <main className="app-shell">
       <AppHeader
+        nickname={profile?.nickname ?? ""}
+        profileImageUrl={profile?.profileImageUrl ?? null}
         onProfileClick={() => setActiveView("profile")}
         onSuggestionClick={() => setSuggestionOpen(true)}
         onLogout={onLogout}
@@ -140,7 +153,11 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
         ) : activeView === "chats" ? (
           <ChatListPage onConversationOpen={openConversation} />
         ) : activeView === "profile" ? (
-          <ProfilePage onOpenChats={() => setActiveView("chats")} />
+          <ProfilePage
+            profile={profile}
+            loadError={profileError}
+            onProfileChange={setProfile}
+          />
         ) : directChatProfile ? (
           <DirectChatPage
             profile={directChatProfile}
