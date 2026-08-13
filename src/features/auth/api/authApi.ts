@@ -33,5 +33,9 @@ export const authApi = {
   login: (email: string, password: string) => request<TokenPair>("/auth/login", { email, password }),
   logout: (refreshToken: string) => request<void>("/auth/logout", { refreshToken }),
   session: () => fetch(`${apiBaseUrl}/auth/session`, { credentials: "include" }),
+  refreshFromCookie: () => fetch(`${apiBaseUrl}/auth/refresh/cookie`, {
+    method: "POST",
+    credentials: "include",
+  }),
   googleLoginUrl: `${backendBaseUrl}/oauth2/authorization/google`,
 };

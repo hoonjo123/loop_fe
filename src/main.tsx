@@ -1,4 +1,4 @@
-import { StrictMode, useEffect, useState } from "react";
+import { StrictMode, useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { AuthPage } from "@/src/features/auth/components/AuthPage";
 import { authApi, type TokenPair } from "@/src/features/auth/api/authApi";
@@ -12,12 +12,22 @@ function App() {
     return accessToken && refreshToken ? { accessToken, refreshToken } : null;
   });
   const [sessionChecked, setSessionChecked] = useState(Boolean(tokens));
+  const sessionRecoveryStarted = useRef(false);
 
   useEffect(() => {
-    if (tokens) return;
+    if (tokens || sessionRecoveryStarted.current) return;
+    sessionRecoveryStarted.current = true;
     authApi.session()
       .then((response) => {
         if (response.ok) setTokens({ accessToken: "cookie", refreshToken: "cookie" });
+        return response;
+      })
+      .then((response) => {
+        if (response.ok) return null;
+        return authApi.refreshFromCookie();
+      })
+      .then((response) => {
+        if (response?.ok) setTokens({ accessToken: "cookie", refreshToken: "cookie" });
       })
       .finally(() => setSessionChecked(true));
   }, [tokens]);
