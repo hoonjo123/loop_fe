@@ -31,6 +31,8 @@ export function ChatRoomPage({ room, currentUserId, onBack, onRoomChange }: Chat
   const [selectedProfile, setSelectedProfile] = useState<ChatProfile | null>(null);
   const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
   const socketRef = useRef<ChatSocket | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const shouldAutoScrollRef = useRef(true);
 
   useEffect(() => {
     let active = true;
@@ -55,6 +57,7 @@ export function ChatRoomPage({ room, currentUserId, onBack, onRoomChange }: Chat
     socket.connect(
       room.id,
       (message) => {
+        shouldAutoScrollRef.current = true;
         setMessages((current) => current.some((item) => item.id === message.id) ? current : [...current, message]);
         void chatApi.markRead(room.id);
       },
@@ -66,6 +69,14 @@ export function ChatRoomPage({ room, currentUserId, onBack, onRoomChange }: Chat
       socketRef.current = null;
     };
   }, [room.id]);
+
+  useEffect(() => {
+    if (!shouldAutoScrollRef.current) {
+      shouldAutoScrollRef.current = true;
+      return;
+    }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages.length]);
 
   const owner = members.find((member) => member.role === "OWNER");
   const me = members.find((member) => member.userId === currentUserId);
@@ -95,6 +106,7 @@ export function ChatRoomPage({ room, currentUserId, onBack, onRoomChange }: Chat
   async function loadOlderMessages() {
     if (!nextCursor) return;
     const page = await chatApi.getMessages(room.id, nextCursor);
+    shouldAutoScrollRef.current = false;
     setMessages((current) => [...page.messages, ...current]);
     setNextCursor(page.nextCursor);
     setHasNext(page.hasNext);
@@ -211,6 +223,7 @@ export function ChatRoomPage({ room, currentUserId, onBack, onRoomChange }: Chat
               </div>
             );
           })}
+          {!searchResults && <div ref={messagesEndRef} className="chat-messages-end" aria-hidden="true" />}
         </div>
 
         {error && <p className="chat-error" role="alert">{error}</p>}
