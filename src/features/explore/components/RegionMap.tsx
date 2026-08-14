@@ -15,6 +15,7 @@ type RegionMapProps = {
   onLocationSelect: (location: ApproximateLocation) => void;
   onLocationSelectCancel: () => void;
   onRoomSelect: (roomId: number) => void;
+  onRoomClusterSelect: (roomIds: number[]) => void;
   rooms: ChatRoom[];
 };
 
@@ -26,6 +27,7 @@ export function RegionMap({
   onLocationSelect,
   onLocationSelectCancel,
   onRoomSelect,
+  onRoomClusterSelect,
   rooms,
 }: RegionMapProps) {
   const [currentLocation, setCurrentLocation] = useState<ApproximateLocation | null>(null);
@@ -77,6 +79,7 @@ export function RegionMap({
         onLocationSelect={onLocationSelect}
         onLocationSelectCancel={onLocationSelectCancel}
         onRoomSelect={onRoomSelect}
+        onRoomClusterSelect={onRoomClusterSelect}
         currentLocation={currentLocation}
         rooms={rooms}
       />

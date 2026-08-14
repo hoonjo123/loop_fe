@@ -7,7 +7,7 @@ import type { ApproximateLocation } from "../types";
 
 type LocationMethodModalProps = {
   onClose: () => void;
-  onChooseCurrentLocation: (location: ApproximateLocation) => void;
+  onChooseCurrentLocation: (location: ApproximateLocation) => Promise<void>;
   onChooseMap: () => void;
 };
 
@@ -24,7 +24,7 @@ export function LocationMethodModal({
     setErrorMessage("");
 
     try {
-      onChooseCurrentLocation(await getCurrentLocation());
+      await onChooseCurrentLocation(await getCurrentLocation());
     } catch (error) {
       setErrorMessage(getCurrentLocationErrorMessage(error));
       setIsLocating(false);

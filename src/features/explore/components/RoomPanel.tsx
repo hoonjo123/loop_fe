@@ -8,25 +8,50 @@ type RoomPanelProps = {
   rooms: ChatRoom[];
   loading: boolean;
   onRoomSelect: (roomId: number) => void;
+  clusterRoomCount: number | null;
+  onClusterClear: () => void;
 };
 
-export function RoomPanel({ selectedRegion, selectedRoomId, rooms, loading, onRoomSelect }: RoomPanelProps) {
+export function RoomPanel({
+  selectedRegion,
+  selectedRoomId,
+  rooms,
+  loading,
+  onRoomSelect,
+  clusterRoomCount,
+  onClusterClear,
+}: RoomPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const isPanelExpanded = clusterRoomCount !== null || isExpanded;
 
   return (
-    <aside className={`room-panel ${isExpanded ? "expanded" : "collapsed"}`} aria-label={`${selectedRegion} 채팅방`}>
+    <aside className={`room-panel ${isPanelExpanded ? "expanded" : "collapsed"}`} aria-label={`${selectedRegion} 채팅방`}>
       <button
         className="room-panel-toggle"
         type="button"
         aria-controls="mobile-room-list"
-        aria-expanded={isExpanded}
-        aria-label={isExpanded ? "채팅 목록 접기" : "채팅 목록 펼치기"}
-        onClick={() => setIsExpanded((expanded) => !expanded)}
+        aria-expanded={isPanelExpanded}
+        aria-label={isPanelExpanded ? "채팅 목록 접기" : "채팅 목록 펼치기"}
+        onClick={() => {
+          if (clusterRoomCount !== null) {
+            onClusterClear();
+            setIsExpanded(false);
+            return;
+          }
+
+          setIsExpanded((expanded) => !expanded);
+        }}
       >
-        {isExpanded ? <ChevronsDown aria-hidden="true" /> : <ChevronsUp aria-hidden="true" />}
+        {isPanelExpanded ? <ChevronsDown aria-hidden="true" /> : <ChevronsUp aria-hidden="true" />}
       </button>
 
       <div className="room-list" id="mobile-room-list">
+        {clusterRoomCount !== null && (
+          <div className="room-cluster-filter" role="status">
+            <strong>선택한 위치의 채팅방 {clusterRoomCount}개</strong>
+            <button type="button" onClick={onClusterClear}>전체보기</button>
+          </div>
+        )}
         {loading && <p className="room-list-state">채팅방을 불러오는 중이에요.</p>}
         {!loading && rooms.length === 0 && <p className="room-list-state">이 지역에는 아직 채팅방이 없어요.</p>}
         {rooms.map((room) => (

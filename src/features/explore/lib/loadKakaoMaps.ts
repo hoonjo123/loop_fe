@@ -37,7 +37,7 @@ export function loadKakaoMaps(appKey: string): Promise<KakaoMapsApi> {
     const script = document.createElement("script");
     script.id = SCRIPT_ID;
     script.async = true;
-    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${appKey}&autoload=false`;
+    script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${appKey}&autoload=false&libraries=services`;
     script.addEventListener("load", resolveKakaoMaps, { once: true });
     script.addEventListener("error", () => reject(new Error("Kakao Maps SDK 요청에 실패했습니다.")), { once: true });
     document.head.appendChild(script);

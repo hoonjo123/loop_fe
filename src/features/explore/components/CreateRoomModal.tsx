@@ -34,7 +34,9 @@ export function CreateRoomModal({ locationLabel, location, onClose, onCreated }:
         regionLabel: String(form.get("region")),
         latitude: location.latitude,
         longitude: location.longitude,
-        expiresAt: roomType === "임시" ? new Date(Date.now() + hours * 60 * 60 * 1000).toISOString() : null,
+        expiresAt: roomType === "임시"
+          ? formatLocalDateTime(new Date(Date.now() + hours * 60 * 60 * 1000))
+          : null,
       });
       onCreated(room);
     } catch (reason) {
@@ -123,4 +125,12 @@ export function CreateRoomModal({ locationLabel, location, onClose, onCreated }:
       </article>
     </div>
   );
+}
+
+function formatLocalDateTime(date: Date) {
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return [
+    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`,
+    `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`,
+  ].join("T");
 }

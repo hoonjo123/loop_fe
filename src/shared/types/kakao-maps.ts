@@ -19,6 +19,21 @@ export type KakaoCustomOverlayInstance = {
   setMap: (map: KakaoMapInstance | null) => void;
 };
 
+export type KakaoRegionCode = {
+  region_1depth_name: string;
+  region_2depth_name: string;
+  region_3depth_name: string;
+  region_type: "H" | "B";
+};
+
+export type KakaoGeocoder = {
+  coord2RegionCode: (
+    longitude: number,
+    latitude: number,
+    callback: (result: KakaoRegionCode[], status: string) => void,
+  ) => void;
+};
+
 export type KakaoMapsApi = {
   load: (callback: () => void) => void;
   LatLng: new (latitude: number, longitude: number) => KakaoLatLng;
@@ -34,6 +49,10 @@ export type KakaoMapsApi = {
     yAnchor?: number;
     zIndex?: number;
   }) => KakaoCustomOverlayInstance;
+  services: {
+    Geocoder: new () => KakaoGeocoder;
+    Status: { OK: string };
+  };
   event: {
     addListener: (
       target: KakaoMapInstance,

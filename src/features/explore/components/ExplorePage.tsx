@@ -15,6 +15,8 @@ import { RegionMap } from "./RegionMap";
 import { RoomPanel } from "./RoomPanel";
 import { RoomPreview } from "./RoomPreview";
 import { SuggestionModal } from "./SuggestionModal";
+import { getRegionFromLocation } from "../lib/getRegionFromLocation";
+import { getDistrictName } from "../lib/getDistrictName";
 
 type ExplorePageProps = {
   onLogout: () => void;
@@ -27,15 +29,16 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
   const [roomBackView, setRoomBackView] = useState<AppView>("explore");
   const [createRoomOpen, setCreateRoomOpen] = useState(false);
   const [locationMethodOpen, setLocationMethodOpen] = useState(false);
-  const [locationMethod, setLocationMethod] = useState<"current" | "map">("map");
   const [isSelectingLocation, setIsSelectingLocation] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<ApproximateLocation | null>(null);
+  const [selectedLocationLabel, setSelectedLocationLabel] = useState("");
   const [activeView, setActiveView] = useState<AppView>("explore");
   const [suggestionOpen, setSuggestionOpen] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [profileError, setProfileError] = useState("");
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
   const [roomsLoading, setRoomsLoading] = useState(true);
+  const [selectedClusterRoomIds, setSelectedClusterRoomIds] = useState<number[] | null>(null);
 
   useEffect(() => {
     profileApi.getMine()
@@ -55,47 +58,67 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
     () => rooms.find((room) => room.id === selectedRoomId),
     [rooms, selectedRoomId],
   );
-  const selectedRegionRooms = useMemo(
-    () => rooms.filter((room) => room.regionLabel?.includes(selectedRegion)),
-    [rooms, selectedRegion],
-  );
+  const selectedRegionRooms = useMemo(() => {
+    const regionRooms = rooms.filter(
+      (room) => getDistrictName(room.regionLabel) === selectedRegion,
+    );
+
+    if (selectedClusterRoomIds === null) return regionRooms;
+    const selectedIds = new Set(selectedClusterRoomIds);
+    return regionRooms.filter((room) => selectedIds.has(room.id));
+  }, [rooms, selectedClusterRoomIds, selectedRegion]);
+
+  const handleRegionChange = useCallback((region: string) => {
+    setSelectedRegion(region);
+    setSelectedClusterRoomIds(null);
+  }, []);
   const startCreateRoom = useCallback(() => {
     setActiveView("explore");
     setSelectedRoomId(null);
     setCreateRoomOpen(false);
     setSelectedLocation(null);
+    setSelectedLocationLabel("");
     setIsSelectingLocation(false);
     setLocationMethodOpen(true);
   }, []);
 
-  const chooseCurrentLocation = useCallback((location: ApproximateLocation) => {
-    setLocationMethod("current");
+  const chooseCurrentLocation = useCallback(async (location: ApproximateLocation) => {
+    const regionLabel = await getRegionFromLocation(location);
     setSelectedLocation(location);
+    setSelectedLocationLabel(`${regionLabel} · 현재 위치 주변`);
     setLocationMethodOpen(false);
     setCreateRoomOpen(true);
   }, []);
 
   const chooseMapLocation = useCallback(() => {
-    setLocationMethod("map");
     setLocationMethodOpen(false);
     setIsSelectingLocation(true);
   }, []);
 
   const handleLocationSelect = useCallback((location: ApproximateLocation) => {
-    setSelectedLocation(location);
-    setIsSelectingLocation(false);
-    setCreateRoomOpen(true);
+    void getRegionFromLocation(location)
+      .then((regionLabel) => {
+        setSelectedLocation(location);
+        setSelectedLocationLabel(`${regionLabel} · 선택한 지점 주변`);
+        setIsSelectingLocation(false);
+        setCreateRoomOpen(true);
+      })
+      .catch((error: unknown) => {
+        window.alert(error instanceof Error ? error.message : "선택한 위치의 행정구역을 확인하지 못했습니다.");
+      });
   }, []);
 
   const cancelLocationSelect = useCallback(() => {
     setIsSelectingLocation(false);
     setSelectedLocation(null);
+    setSelectedLocationLabel("");
     setLocationMethodOpen(true);
   }, []);
 
   const closeCreateRoom = useCallback(() => {
     setCreateRoomOpen(false);
     setSelectedLocation(null);
+    setSelectedLocationLabel("");
   }, []);
 
   const openConversation = useCallback(async (conversation: Conversation) => {
@@ -121,12 +144,16 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
           <>
             <RegionMap
               selectedRegion={selectedRegion}
-              onRegionChange={setSelectedRegion}
+              onRegionChange={handleRegionChange}
               selectedLocation={selectedLocation}
               isSelectingLocation={isSelectingLocation}
               onLocationSelect={handleLocationSelect}
               onLocationSelectCancel={cancelLocationSelect}
               onRoomSelect={setSelectedRoomId}
+              onRoomClusterSelect={(roomIds) => {
+                setSelectedRoomId(null);
+                setSelectedClusterRoomIds(roomIds);
+              }}
               rooms={rooms}
             />
             <RoomPanel
@@ -135,6 +162,8 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
               onRoomSelect={setSelectedRoomId}
               rooms={selectedRegionRooms}
               loading={roomsLoading}
+              clusterRoomCount={selectedClusterRoomIds?.length ?? null}
+              onClusterClear={() => setSelectedClusterRoomIds(null)}
             />
           </>
         ) : activeView === "chats" ? (
@@ -194,13 +223,16 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
 
       {createRoomOpen && selectedLocation && (
         <CreateRoomModal
-          locationLabel={locationMethod === "current" ? `${selectedRegion} · 현재 위치 주변` : `${selectedRegion} · 선택한 지점 주변`}
+          locationLabel={selectedLocationLabel}
           location={selectedLocation}
           onClose={closeCreateRoom}
           onCreated={(room) => {
             setRooms((current) => [room, ...current]);
+            setSelectedRegion(getDistrictName(room.regionLabel));
+            setSelectedClusterRoomIds(null);
             setCreateRoomOpen(false);
             setSelectedLocation(null);
+            setSelectedLocationLabel("");
             setOpenedRoom(room);
             setRoomBackView("explore");
             setActiveView("room");
