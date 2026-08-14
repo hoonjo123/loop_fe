@@ -236,8 +236,8 @@ export function ChatRoomPage({ room, currentUserId, onBack, onRoomChange }: Chat
 
       <aside className="chat-room-info" aria-label="채팅방 정보">
         <div className="chat-room-info-header">
-          <span className={room.durationType === "TEMPORARY" ? "temporary" : "permanent"}>
-            {room.roomType === "DIRECT" ? "1:1" : room.durationType === "TEMPORARY" ? "임시" : "영구"}
+          <span className={room.roomType === "DIRECT" ? "direct" : "open"}>
+            {room.roomType === "DIRECT" ? "1:1" : "그룹"}
           </span>
           <h2>{roomTitle}</h2>
           <p>{room.description || "서로를 배려하며 편안하게 대화해주세요."}</p>

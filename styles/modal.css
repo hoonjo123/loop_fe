@@ -8,6 +8,7 @@
 .preview-body h2 { margin: 10px 0 7px; font-size: 22px; letter-spacing: -.04em; }
 .preview-body > p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
 .join-button { width: 100%; margin-top: 20px; padding: 14px; border: 0; border-radius: 13px; background: var(--ink); color: white; font-size: 13px; font-weight: 850; cursor: pointer; }
+.join-button:disabled { color: #89958f; background: #edf1ef; cursor: default; }
 .safety-copy { display: block; margin-top: 10px; color: #98a49f; text-align: center; font-size: 9px; }
 
 .create-room-modal { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; padding: 20px; }

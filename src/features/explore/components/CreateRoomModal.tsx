@@ -12,31 +12,26 @@ type CreateRoomModalProps = {
   onCreated: (room: ChatRoom) => void;
 };
 
-type RoomType = "영구" | "임시";
+type RoomType = "GROUP" | "ONE_TO_ONE";
 
 export function CreateRoomModal({ locationLabel, location, onClose, onCreated }: CreateRoomModalProps) {
-  const [roomType, setRoomType] = useState<RoomType>("영구");
+  const [roomType, setRoomType] = useState<RoomType>("GROUP");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    const expirationOption = String(form.get("expiresAt") ?? "24시간 후");
-    const hours = expirationOption === "2시간 후" ? 2 : 24;
     setSubmitting(true);
     setError("");
     try {
       const room = await chatApi.createRoom({
-        durationType: roomType === "임시" ? "TEMPORARY" : "PERMANENT",
+        openChatType: roomType,
         title: String(form.get("title")),
         description: String(form.get("description")),
         regionLabel: String(form.get("region")),
         latitude: location.latitude,
         longitude: location.longitude,
-        expiresAt: roomType === "임시"
-          ? formatLocalDateTime(new Date(Date.now() + hours * 60 * 60 * 1000))
-          : null,
       });
       onCreated(room);
     } catch (reason) {
@@ -66,20 +61,20 @@ export function CreateRoomModal({ locationLabel, location, onClose, onCreated }:
             <legend>채팅방 유형</legend>
             <div className="room-type-options">
               <button
-                className={roomType === "영구" ? "active" : ""}
-                onClick={() => setRoomType("영구")}
+                className={roomType === "GROUP" ? "active" : ""}
+                onClick={() => setRoomType("GROUP")}
                 type="button"
               >
-                <strong>영구 커뮤니티</strong>
-                <span>종료 없이 계속 대화해요</span>
+                <strong>그룹채팅</strong>
+                <span>참여자 모두가 한 방에서 대화해요</span>
               </button>
               <button
-                className={roomType === "임시" ? "active" : ""}
-                onClick={() => setRoomType("임시")}
+                className={roomType === "ONE_TO_ONE" ? "active" : ""}
+                onClick={() => setRoomType("ONE_TO_ONE")}
                 type="button"
               >
-                <strong>임시 커뮤니티</strong>
-                <span>정해진 시간 동안 만나요</span>
+                <strong>1:1 채팅</strong>
+                <span>참여자마다 방장과 따로 대화해요</span>
               </button>
             </div>
           </fieldset>
@@ -96,7 +91,7 @@ export function CreateRoomModal({ locationLabel, location, onClose, onCreated }:
             <small>최대 120자</small>
           </label>
 
-          <div className={`create-room-grid ${roomType === "영구" ? "single" : ""}`}>
+          <div className="create-room-grid single">
             <label className="create-room-field">
               <span>대략적인 위치</span>
               <input name="region" value={locationLabel} readOnly />
@@ -105,15 +100,6 @@ export function CreateRoomModal({ locationLabel, location, onClose, onCreated }:
               <small>약 100m 단위로만 위치가 표시됩니다.</small>
             </label>
 
-            {roomType === "임시" && (
-              <label className="create-room-field">
-                <span>종료 시간</span>
-                <select name="expiresAt" defaultValue="24시간 후">
-                  <option>2시간 후</option>
-                  <option>24시간 후</option>
-                </select>
-              </label>
-            )}
           </div>
 
           <p className="create-room-notice">정확한 위치는 다른 사용자에게 공개되지 않아요.</p>
@@ -125,12 +111,4 @@ export function CreateRoomModal({ locationLabel, location, onClose, onCreated }:
       </article>
     </div>
   );
-}
-
-function formatLocalDateTime(date: Date) {
-  const pad = (value: number) => String(value).padStart(2, "0");
-  return [
-    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`,
-    `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`,
-  ].join("T");
 }

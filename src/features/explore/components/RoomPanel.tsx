@@ -65,8 +65,8 @@ export function RoomPanel({
           >
             <div className="room-copy">
               <div className="room-meta">
-                <span className={room.durationType === "TEMPORARY" ? "temporary" : "permanent"}>
-                  {room.durationType === "TEMPORARY" ? "임시" : "영구"}
+                <span className={room.openChatType === "ONE_TO_ONE" ? "direct" : "open"}>
+                  {room.openChatType === "ONE_TO_ONE" ? "1:1" : "그룹"}
                 </span>
                 <small>{room.regionLabel}</small>
               </div>
@@ -74,7 +74,7 @@ export function RoomPanel({
               <p>{room.description}</p>
               <div className="room-bottom">
                 <span>● {room.memberCount}명</span>
-                <time>{room.expiresAt ? `${new Date(room.expiresAt).toLocaleString("ko-KR")} 종료` : "계속되는 대화"}</time>
+                <time>{room.openChatType === "ONE_TO_ONE" ? "방장과 개별 대화" : "함께하는 대화"}</time>
               </div>
             </div>
           </button>

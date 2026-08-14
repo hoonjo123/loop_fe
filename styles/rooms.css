@@ -10,6 +10,8 @@
 .room-meta > span { padding: 3px 6px; border-radius: 5px; font-size: 8px; font-weight: 850; }
 .temporary { color: #b44d39; background: #ffebe6; }
 .permanent { color: #3b6ab5; background: #eaf1ff; }
+.room-meta > span.open, .chat-room-info-header > span.open { color: #3b6ab5; background: #eaf1ff; }
+.room-meta > span.direct, .chat-room-info-header > span.direct { color: #9d583d; background: #fff0e8; }
 .room-meta small { color: #93a09b; font-size: 9px; }
 .room-meta .room-participants { color: #55746a; font-weight: 700; }
 .room-card h3 { margin: 7px 0 5px; font-size: 14px; letter-spacing: -.025em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

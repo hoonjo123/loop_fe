@@ -43,7 +43,6 @@
   .bottom-nav button small { font-size: 9px; font-weight: 750; }
   .bottom-nav button.active { color: var(--mint-dark); }
   .bottom-nav button:nth-child(3) { color: var(--mint-dark); }
-  .bottom-nav i { right: 22%; top: 7px; }
   .room-preview { align-items: end; padding: 0; }
   .room-preview article { width: 100%; border-radius: 25px 25px 0 0; }
   .create-room-modal { align-items: end; padding: 0; }

@@ -1,26 +1,26 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Search, Users } from "lucide-react";
-import { chatApi, type Conversation } from "@/src/features/chat/api/chatApi";
+import type { Conversation } from "@/src/features/chat/api/chatApi";
 
 type ChatFilter = "전체" | "오픈채팅" | "1:1";
 
 type ChatListPageProps = {
   onConversationOpen: (conversation: Conversation) => void;
+  conversations: Conversation[];
+  loading: boolean;
+  error: string;
 };
 
-export function ChatListPage({ onConversationOpen }: ChatListPageProps) {
+export function ChatListPage({
+  onConversationOpen,
+  conversations,
+  loading,
+  error,
+}: ChatListPageProps) {
   const [filter, setFilter] = useState<ChatFilter>("전체");
   const [query, setQuery] = useState("");
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    chatApi.getConversations()
-      .then(setConversations)
-      .catch((reason: unknown) => setError(reason instanceof Error ? reason.message : "채팅 목록을 불러오지 못했습니다."));
-  }, []);
 
   const filteredConversations = useMemo(() => conversations.filter((item) => {
     const matchesType = filter === "전체"
@@ -56,8 +56,9 @@ export function ChatListPage({ onConversationOpen }: ChatListPageProps) {
       </div>
 
       <div className="conversation-list">
+        {loading && <p className="conversation-state">채팅 목록을 불러오는 중입니다.</p>}
         {error && <p className="conversation-state" role="alert">{error}</p>}
-        {!error && filteredConversations.length === 0 && <p className="conversation-state">참여 중인 채팅이 없습니다.</p>}
+        {!loading && !error && filteredConversations.length === 0 && <p className="conversation-state">참여 중인 채팅이 없습니다.</p>}
         {filteredConversations.map((conversation) => (
           <button
             key={conversation.roomId}

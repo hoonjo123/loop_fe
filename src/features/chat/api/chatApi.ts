@@ -10,13 +10,12 @@ const webSocketUrl = env.webSocketUrl || `${backendBaseUrl.replace(/^http/, "ws"
 export type ChatRoom = {
   id: number;
   roomType: "OPEN" | "DIRECT";
-  durationType: "PERMANENT" | "TEMPORARY" | null;
+  openChatType: "GROUP" | "ONE_TO_ONE" | null;
   title: string | null;
   description: string | null;
   regionLabel: string | null;
   latitude: number | null;
   longitude: number | null;
-  expiresAt: string | null;
   status: "ACTIVE" | "CLOSED" | "BLINDED";
   ownerId: number;
   ownerNickname: string;
@@ -66,13 +65,12 @@ export type Conversation = {
 };
 
 export type CreateRoomInput = {
-  durationType: "PERMANENT" | "TEMPORARY";
+  openChatType: "GROUP" | "ONE_TO_ONE";
   title: string;
   description: string;
   regionLabel: string;
   latitude: number;
   longitude: number;
-  expiresAt: string | null;
 };
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -175,6 +173,81 @@ export class ChatSocket {
     });
     if (!refreshed.ok || !this.client) return;
     await this.client.deactivate();
+    this.client.activate();
+  }
+}
+
+export class ChatNotificationSocket {
+  private client: Client | null = null;
+  private subscriptions = new Map<number, StompSubscription>();
+  private roomIds = new Set<number>();
+  private onMessage: ((message: ChatMessage) => void) | null = null;
+  private refreshTimer: number | null = null;
+
+  connect(onMessage: (message: ChatMessage) => void) {
+    this.onMessage = onMessage;
+    this.client = new Client({
+      webSocketFactory: () => new WebSocket(webSocketUrl),
+      reconnectDelay: 3000,
+      heartbeatIncoming: 10000,
+      heartbeatOutgoing: 10000,
+      onConnect: () => {
+        this.subscriptions.clear();
+        this.roomIds.forEach((roomId) => this.subscribe(roomId));
+      },
+    });
+    this.client.activate();
+    this.refreshTimer = window.setInterval(() => {
+      void this.reconnectWithFreshToken();
+    }, 9 * 60 * 1000);
+  }
+
+  syncRooms(roomIds: number[]) {
+    const nextRoomIds = new Set(roomIds);
+
+    this.subscriptions.forEach((subscription, roomId) => {
+      if (!nextRoomIds.has(roomId)) {
+        subscription.unsubscribe();
+        this.subscriptions.delete(roomId);
+      }
+    });
+
+    this.roomIds = nextRoomIds;
+    if (!this.client?.connected) return;
+
+    this.roomIds.forEach((roomId) => {
+      if (!this.subscriptions.has(roomId)) this.subscribe(roomId);
+    });
+  }
+
+  disconnect() {
+    if (this.refreshTimer !== null) {
+      window.clearInterval(this.refreshTimer);
+      this.refreshTimer = null;
+    }
+    this.subscriptions.forEach((subscription) => subscription.unsubscribe());
+    this.subscriptions.clear();
+    void this.client?.deactivate();
+    this.client = null;
+    this.onMessage = null;
+  }
+
+  private subscribe(roomId: number) {
+    const subscription = this.client?.subscribe(
+      `/topic/chat/rooms/${roomId}`,
+      (frame) => this.onMessage?.(JSON.parse(frame.body) as ChatMessage),
+    );
+    if (subscription) this.subscriptions.set(roomId, subscription);
+  }
+
+  private async reconnectWithFreshToken() {
+    const refreshed = await fetch(`${apiBaseUrl}/auth/refresh/cookie`, {
+      method: "POST",
+      credentials: "include",
+    });
+    if (!refreshed.ok || !this.client) return;
+    await this.client.deactivate();
+    this.subscriptions.clear();
     this.client.activate();
   }
 }

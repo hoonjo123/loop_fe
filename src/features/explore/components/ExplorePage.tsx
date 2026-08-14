@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChatListPage } from "@/src/features/chat-list/components/ChatListPage";
-import { chatApi, type ChatRoom, type Conversation } from "@/src/features/chat/api/chatApi";
+import { ChatNotificationSocket, chatApi, type ChatRoom, type Conversation } from "@/src/features/chat/api/chatApi";
 import { ChatRoomPage } from "@/src/features/chat-room/components/ChatRoomPage";
 import { ProfilePage } from "@/src/features/profile/components/ProfilePage";
 import { profileApi, type UserProfile } from "@/src/features/profile/api/profileApi";
@@ -40,6 +40,31 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
   const [roomsLoading, setRoomsLoading] = useState(true);
   const [roomsError, setRoomsError] = useState("");
   const [selectedClusterRoomIds, setSelectedClusterRoomIds] = useState<number[] | null>(null);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [conversationsLoading, setConversationsLoading] = useState(true);
+  const [conversationsError, setConversationsError] = useState("");
+  const notificationSocketRef = useRef<ChatNotificationSocket | null>(null);
+  const activeRoomIdRef = useRef<number | null>(null);
+  const currentUserIdRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    activeRoomIdRef.current = activeView === "room" ? openedRoom?.id ?? null : null;
+    currentUserIdRef.current = profile?.id ?? null;
+  }, [activeView, openedRoom?.id, profile?.id]);
+
+  const loadConversations = useCallback(async () => {
+    try {
+      const loadedConversations = await chatApi.getConversations();
+      setConversations(loadedConversations);
+      setConversationsError("");
+    } catch (error) {
+      setConversationsError(
+        error instanceof Error ? error.message : "채팅 목록을 불러오지 못했습니다.",
+      );
+    } finally {
+      setConversationsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     profileApi.getMine()
@@ -48,6 +73,56 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
         setProfileError(error instanceof Error ? error.message : "프로필 정보를 불러오지 못했습니다.");
       });
   }, []);
+
+  useEffect(() => {
+    const initialLoadId = window.setTimeout(() => void loadConversations(), 0);
+    const intervalId = window.setInterval(() => void loadConversations(), 30_000);
+    return () => {
+      window.clearTimeout(initialLoadId);
+      window.clearInterval(intervalId);
+    };
+  }, [loadConversations]);
+
+  useEffect(() => {
+    const socket = new ChatNotificationSocket();
+    notificationSocketRef.current = socket;
+    socket.connect((message) => {
+      if (
+        message.senderId === null
+        || message.senderId === currentUserIdRef.current
+        || message.roomId === activeRoomIdRef.current
+      ) {
+        return;
+      }
+
+      setConversations((current) => current.map((conversation) =>
+        conversation.roomId === message.roomId
+          ? {
+              ...conversation,
+              lastMessage: message.deleted ? "삭제된 메시지입니다." : message.content ?? "새 메시지",
+              lastMessageAt: message.createdAt,
+              unreadCount: conversation.unreadCount + 1,
+            }
+          : conversation,
+      ));
+    });
+
+    return () => {
+      socket.disconnect();
+      notificationSocketRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    notificationSocketRef.current?.syncRooms(
+      conversations.map((conversation) => conversation.roomId),
+    );
+  }, [conversations]);
+
+  const unreadMessageCount = useMemo(
+    () => conversations.reduce((total, conversation) => total + conversation.unreadCount, 0),
+    [conversations],
+  );
 
   useEffect(() => {
     chatApi.getOpenRooms()
@@ -139,10 +214,18 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
 
   const openConversation = useCallback(async (conversation: Conversation) => {
     const room = await chatApi.getRoom(conversation.roomId);
+    setConversations((current) => current.map((item) =>
+      item.roomId === conversation.roomId ? { ...item, unreadCount: 0 } : item,
+    ));
     setOpenedRoom(room);
     setRoomBackView("chats");
     setActiveView("room");
   }, []);
+
+  const navigate = useCallback((view: AppView) => {
+    setActiveView(view);
+    if (view === "chats") void loadConversations();
+  }, [loadConversations]);
 
   return (
     <main className="app-shell">
@@ -155,7 +238,12 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
       />
 
       <section className="workspace">
-        <DesktopNavigation activeView={activeView} onNavigate={setActiveView} onCreateRoom={startCreateRoom} />
+        <DesktopNavigation
+          activeView={activeView}
+          onNavigate={navigate}
+          onCreateRoom={startCreateRoom}
+          unreadMessageCount={unreadMessageCount}
+        />
         {activeView === "explore" ? (
           <>
             <RegionMap
@@ -184,7 +272,12 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
             />
           </>
         ) : activeView === "chats" ? (
-          <ChatListPage onConversationOpen={openConversation} />
+          <ChatListPage
+            onConversationOpen={openConversation}
+            conversations={conversations}
+            loading={conversationsLoading}
+            error={conversationsError}
+          />
         ) : activeView === "profile" ? (
           <ProfilePage
             profile={profile}
@@ -196,11 +289,19 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
             key={openedRoom.id}
             room={openedRoom}
             currentUserId={profile.id}
-            onBack={() => setActiveView(roomBackView)}
+            onBack={() => {
+              setActiveView(roomBackView);
+              void loadConversations();
+            }}
             onRoomChange={setOpenedRoom}
           />
         ) : (
-          <ChatListPage onConversationOpen={openConversation} />
+          <ChatListPage
+            onConversationOpen={openConversation}
+            conversations={conversations}
+            loading={conversationsLoading}
+            error={conversationsError}
+          />
         )}
       </section>
 
@@ -210,7 +311,12 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
         </button>
       )}
 
-      <MobileNavigation activeView={activeView} onNavigate={setActiveView} onCreateRoom={startCreateRoom} />
+      <MobileNavigation
+        activeView={activeView}
+        onNavigate={navigate}
+        onCreateRoom={startCreateRoom}
+        unreadMessageCount={unreadMessageCount}
+      />
 
       {locationMethodOpen && (
         <LocationMethodModal
@@ -223,6 +329,7 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
       {selectedRoom && (
         <RoomPreview
           room={selectedRoom}
+          isOwner={selectedRoom.ownerId === profile?.id}
           onClose={() => setSelectedRoomId(null)}
           onJoin={() => {
             void chatApi.joinRoom(selectedRoom.id).then((joinedRoom) => {
@@ -250,9 +357,14 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
             setCreateRoomOpen(false);
             setSelectedLocation(null);
             setSelectedLocationLabel("");
-            setOpenedRoom(room);
-            setRoomBackView("explore");
-            setActiveView("room");
+            if (room.openChatType === "ONE_TO_ONE") {
+              setSelectedRoomId(room.id);
+              setActiveView("explore");
+            } else {
+              setOpenedRoom(room);
+              setRoomBackView("explore");
+              setActiveView("room");
+            }
           }}
         />
       )}
