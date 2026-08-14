@@ -1,4 +1,4 @@
-import { Ban, Flag, MessageCircle, X } from "lucide-react";
+import { Ban, Flag, MessageCircle, UserPlus, X } from "lucide-react";
 
 export type ChatProfile = {
   userId: number;
@@ -13,10 +13,11 @@ type UserProfileModalProps = {
   onClose: () => void;
   onStartDirectChat: () => void;
   onBlock?: () => void;
+  onAddFriend?: () => void;
   onReport?: () => void;
 };
 
-export function UserProfileModal({ profile, onClose, onStartDirectChat, onBlock, onReport }: UserProfileModalProps) {
+export function UserProfileModal({ profile, onClose, onStartDirectChat, onBlock, onAddFriend, onReport }: UserProfileModalProps) {
   return (
     <div className="user-profile-modal" role="dialog" aria-modal="true" aria-labelledby="user-profile-name">
       <button className="user-profile-backdrop" onClick={onClose} aria-label="사용자 정보 닫기" />
@@ -33,6 +34,7 @@ export function UserProfileModal({ profile, onClose, onStartDirectChat, onBlock,
           1:1 대화하기
         </button>
         <div className="user-profile-safety-actions">
+          {onAddFriend && <button type="button" onClick={onAddFriend}><UserPlus /> 친구 추가</button>}
           {onReport && <button type="button" onClick={onReport}><Flag /> 신고</button>}
           {onBlock && <button type="button" onClick={onBlock}><Ban /> 차단</button>}
         </div>

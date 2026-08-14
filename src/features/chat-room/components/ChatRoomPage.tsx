@@ -5,6 +5,7 @@ import { ArrowLeft, Flag, ImagePlus, LogOut, Search, Send, Trash2, UserMinus, Us
 import { chatApi, ChatSocket, type ChatMember, type ChatMessage, type ChatRoom } from "@/src/features/chat/api/chatApi";
 import { UserProfileModal, type ChatProfile } from "./UserProfileModal";
 import { ReportModal } from "./ReportModal";
+import { profileApi } from "@/src/features/profile/api/profileApi";
 
 type ReportTarget =
   | { type: "room"; id: number; label: string }
@@ -278,9 +279,21 @@ export function ChatRoomPage({ room, currentUserId, onBack, onRoomChange }: Chat
           profile={selectedProfile}
           onClose={() => setSelectedProfile(null)}
           onStartDirectChat={() => void startDirectChat(selectedProfile.userId)}
+          onAddFriend={() => {
+            void profileApi.addFriend(selectedProfile.userId).then(() => {
+              window.alert(`${selectedProfile.nickname}님을 친구로 추가했습니다.`);
+              setSelectedProfile(null);
+            }).catch((error: unknown) => {
+              window.alert(error instanceof Error ? error.message : "친구를 추가하지 못했습니다.");
+            });
+          }}
           onBlock={() => {
             if (window.confirm(`${selectedProfile.nickname}님을 차단하시겠습니까?`)) {
-              void chatApi.blockUser(selectedProfile.userId).then(() => setSelectedProfile(null));
+              void chatApi.blockUser(selectedProfile.userId)
+                .then(() => setSelectedProfile(null))
+                .catch((error: unknown) => {
+                  window.alert(error instanceof Error ? error.message : "사용자를 차단하지 못했습니다.");
+                });
             }
           }}
           onReport={() => {

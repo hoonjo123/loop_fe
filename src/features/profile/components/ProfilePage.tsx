@@ -1,6 +1,6 @@
-import { useState, type FormEvent } from "react";
-import { CalendarDays, Mail, MapPin, Pencil, ShieldCheck, X } from "lucide-react";
-import { profileApi, type ProfileUpdate, type UserProfile } from "@/src/features/profile/api/profileApi";
+import { useEffect, useState, type FormEvent } from "react";
+import { Ban, CalendarDays, Mail, MapPin, Pencil, ShieldCheck, UserRoundCheck, X } from "lucide-react";
+import { profileApi, type BlockedUser, type Friend, type ProfileUpdate, type UserProfile } from "@/src/features/profile/api/profileApi";
 
 type ProfilePageProps = {
   profile: UserProfile | null;
@@ -20,6 +20,21 @@ export function ProfilePage({ profile, loadError, onProfileChange }: ProfilePage
   const [editOpen, setEditOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [friends, setFriends] = useState<Friend[]>([]);
+  const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([]);
+  const [relationshipView, setRelationshipView] = useState<"friends" | "blocks" | null>(null);
+  const [relationshipsError, setRelationshipsError] = useState("");
+
+  useEffect(() => {
+    Promise.all([profileApi.getFriends(), profileApi.getBlockedUsers()])
+      .then(([loadedFriends, loadedBlockedUsers]) => {
+        setFriends(loadedFriends);
+        setBlockedUsers(loadedBlockedUsers);
+      })
+      .catch((error: unknown) => {
+        setRelationshipsError(error instanceof Error ? error.message : "친구 정보를 불러오지 못했습니다.");
+      });
+  }, []);
 
   if (!profile) {
     return (
@@ -99,6 +114,69 @@ export function ProfilePage({ profile, loadError, onProfileChange }: ProfilePage
           <div><dt><ShieldCheck aria-hidden="true" /> 로그인 방식</dt><dd>{profile.authProvider === "GOOGLE" ? "Google" : "이메일"}</dd></div>
         </dl>
       </article>
+
+      <section className="relationship-cards" aria-label="친구 및 차단 관리">
+        <button type="button" onClick={() => setRelationshipView("friends")}>
+          <span><UserRoundCheck aria-hidden="true" /></span>
+          <div><small>친구 목록</small><strong>{friends.length}</strong></div>
+        </button>
+        <button type="button" onClick={() => setRelationshipView("blocks")}>
+          <span><Ban aria-hidden="true" /></span>
+          <div><small>차단 목록</small><strong>{blockedUsers.length}</strong></div>
+        </button>
+      </section>
+
+      {relationshipsError && <p className="relationship-error" role="alert">{relationshipsError}</p>}
+
+      {relationshipView && (
+        <section className="relationship-list" aria-labelledby="relationship-list-title">
+          <header>
+            <div>
+              <p className="eyebrow">RELATIONSHIPS</p>
+              <h2 id="relationship-list-title">{relationshipView === "friends" ? "친구 목록" : "차단 목록"}</h2>
+            </div>
+            <button type="button" onClick={() => setRelationshipView(null)} aria-label="목록 닫기"><X /></button>
+          </header>
+          {(relationshipView === "friends" ? friends : blockedUsers).length === 0 && (
+            <p className="relationship-empty">
+              {relationshipView === "friends" ? "아직 추가한 친구가 없습니다." : "차단한 사용자가 없습니다."}
+            </p>
+          )}
+          <ul>
+            {(relationshipView === "friends" ? friends : blockedUsers).map((user) => (
+              <li key={user.userId}>
+                <span className="relationship-avatar">
+                  {user.profileImageUrl ? <img src={user.profileImageUrl} alt="" /> : user.nickname.slice(0, 1)}
+                </span>
+                <div>
+                  <strong>{user.nickname}</strong>
+                  <small>{"activityArea" in user && user.activityArea ? user.activityArea : relationshipView === "friends" ? "활동 지역 미설정" : "차단된 사용자"}</small>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const action = relationshipView === "friends"
+                      ? profileApi.removeFriend(user.userId)
+                      : profileApi.unblockUser(user.userId);
+                    void action.then(() => {
+                      if (relationshipView === "friends") {
+                        setFriends((current) => current.filter((friend) => friend.userId !== user.userId));
+                      } else {
+                        setBlockedUsers((current) => current.filter((blocked) => blocked.userId !== user.userId));
+                      }
+                      setRelationshipsError("");
+                    }).catch((error: unknown) => {
+                      setRelationshipsError(error instanceof Error ? error.message : "관계를 해제하지 못했습니다.");
+                    });
+                  }}
+                >
+                  {relationshipView === "friends" ? "친구 해제" : "차단 해제"}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {editOpen && (
         <div className="profile-edit-modal" role="dialog" aria-modal="true" aria-labelledby="profile-edit-title">
