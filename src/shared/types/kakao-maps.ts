@@ -12,7 +12,18 @@ export type KakaoMapInstance = {
   panTo: (position: KakaoLatLng) => void;
   relayout: () => void;
   setCenter: (position: KakaoLatLng) => void;
+  setBounds: (
+    bounds: KakaoLatLngBounds,
+    paddingTop?: number,
+    paddingRight?: number,
+    paddingBottom?: number,
+    paddingLeft?: number,
+  ) => void;
   setLevel: (level: number, options?: { anchor?: KakaoLatLng; animate?: boolean }) => void;
+};
+
+export type KakaoLatLngBounds = {
+  extend: (position: KakaoLatLng) => void;
 };
 
 export type KakaoCustomOverlayInstance = {
@@ -37,6 +48,7 @@ export type KakaoGeocoder = {
 export type KakaoMapsApi = {
   load: (callback: () => void) => void;
   LatLng: new (latitude: number, longitude: number) => KakaoLatLng;
+  LatLngBounds: new () => KakaoLatLngBounds;
   Map: new (
     container: HTMLElement,
     options: { center: KakaoLatLng; level: number },

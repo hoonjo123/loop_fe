@@ -55,6 +55,7 @@ export function KakaoMap({
   const roomOverlaysRef = useRef<KakaoCustomOverlayInstance[]>([]);
   const selectedLocationOverlayRef = useRef<KakaoCustomOverlayInstance | null>(null);
   const currentLocationOverlayRef = useRef<KakaoCustomOverlayInstance | null>(null);
+  const hasFittedRoomsRef = useRef(false);
   const [focusedRegion, setFocusedRegion] = useState<string | null>(null);
   const [displayMode, setDisplayMode] = useState<MapDisplayMode>("district");
   const [zoomLevel, setZoomLevel] = useState(8);
@@ -107,6 +108,36 @@ export function KakaoMap({
 
     return () => maps.event.removeListener(map, "idle", syncDisplayMode);
   }, [ready]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    const maps = mapsApiRef.current;
+    if (!ready || !map || !maps || hasFittedRoomsRef.current) return;
+
+    const locatedRooms = rooms.filter(
+      (room) => room.latitude !== null && room.longitude !== null,
+    );
+    if (locatedRooms.length === 0) return;
+
+    hasFittedRoomsRef.current = true;
+
+    if (locatedRooms.length === 1) {
+      const room = locatedRooms[0];
+      map.setCenter(new maps.LatLng(room.latitude!, room.longitude!));
+      map.setLevel(7);
+      return;
+    }
+
+    const bounds = new maps.LatLngBounds();
+    locatedRooms.forEach((room) => {
+      bounds.extend(new maps.LatLng(room.latitude!, room.longitude!));
+    });
+    map.setBounds(bounds, 80, 80, 80, 80);
+
+    if (map.getLevel() < DISTRICT_LEVEL) {
+      map.setLevel(DISTRICT_LEVEL);
+    }
+  }, [ready, rooms]);
 
   const changeZoom = (direction: "in" | "out") => {
     const map = mapRef.current;

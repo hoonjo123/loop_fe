@@ -38,6 +38,7 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
   const [profileError, setProfileError] = useState("");
   const [rooms, setRooms] = useState<ChatRoom[]>([]);
   const [roomsLoading, setRoomsLoading] = useState(true);
+  const [roomsError, setRoomsError] = useState("");
   const [selectedClusterRoomIds, setSelectedClusterRoomIds] = useState<number[] | null>(null);
 
   useEffect(() => {
@@ -50,7 +51,22 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
 
   useEffect(() => {
     chatApi.getOpenRooms()
-      .then(setRooms)
+      .then((loadedRooms) => {
+        setRooms(loadedRooms);
+        setSelectedRegion((currentRegion) => {
+          if (loadedRooms.length === 0) return currentRegion;
+
+          const currentRegionHasRooms = loadedRooms.some(
+            (room) => getDistrictName(room.regionLabel) === currentRegion,
+          );
+          return currentRegionHasRooms
+            ? currentRegion
+            : getDistrictName(loadedRooms[0]?.regionLabel ?? null);
+        });
+      })
+      .catch((error: unknown) => {
+        setRoomsError(error instanceof Error ? error.message : "채팅방을 불러오지 못했습니다.");
+      })
       .finally(() => setRoomsLoading(false));
   }, []);
 
@@ -162,6 +178,7 @@ export function ExplorePage({ onLogout }: ExplorePageProps) {
               onRoomSelect={setSelectedRoomId}
               rooms={selectedRegionRooms}
               loading={roomsLoading}
+              error={roomsError}
               clusterRoomCount={selectedClusterRoomIds?.length ?? null}
               onClusterClear={() => setSelectedClusterRoomIds(null)}
             />

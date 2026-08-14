@@ -1,5 +1,6 @@
 import { env } from "@/src/config/env";
 import type { ApiError } from "@/src/features/auth/api/authApi";
+import { authenticatedFetch } from "@/src/shared/api/authenticatedFetch";
 
 const apiBaseUrl = (env.apiBaseUrl || "http://localhost:8080/api").replace(/\/$/, "");
 
@@ -19,19 +20,12 @@ export type ProfileUpdate = Pick<
   "nickname" | "profileImageUrl" | "introduction" | "activityArea"
 >;
 
-async function fetchProfile(path: string, init?: RequestInit, retry = true): Promise<UserProfile> {
-  const response = await fetch(`${apiBaseUrl}${path}`, {
+async function fetchProfile(path: string, init?: RequestInit): Promise<UserProfile> {
+  const response = await authenticatedFetch(`${apiBaseUrl}${path}`, {
     ...init,
     headers: { "Content-Type": "application/json", ...init?.headers },
     credentials: "include",
   });
-  if (response.status === 401 && retry) {
-    const refreshed = await fetch(`${apiBaseUrl}/auth/refresh/cookie`, {
-      method: "POST",
-      credentials: "include",
-    });
-    if (refreshed.ok) return fetchProfile(path, init, false);
-  }
   if (!response.ok) {
     const body = await response.json().catch(() => ({})) as { code?: string; message?: string };
     const error = new Error(body.message ?? "프로필 정보를 처리하지 못했습니다.") as ApiError;

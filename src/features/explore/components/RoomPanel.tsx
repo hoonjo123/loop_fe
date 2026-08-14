@@ -7,6 +7,7 @@ type RoomPanelProps = {
   selectedRoomId: number | null;
   rooms: ChatRoom[];
   loading: boolean;
+  error: string;
   onRoomSelect: (roomId: number) => void;
   clusterRoomCount: number | null;
   onClusterClear: () => void;
@@ -17,6 +18,7 @@ export function RoomPanel({
   selectedRoomId,
   rooms,
   loading,
+  error,
   onRoomSelect,
   clusterRoomCount,
   onClusterClear,
@@ -53,7 +55,8 @@ export function RoomPanel({
           </div>
         )}
         {loading && <p className="room-list-state">채팅방을 불러오는 중이에요.</p>}
-        {!loading && rooms.length === 0 && <p className="room-list-state">이 지역에는 아직 채팅방이 없어요.</p>}
+        {!loading && error && <p className="room-list-state error">{error}</p>}
+        {!loading && !error && rooms.length === 0 && <p className="room-list-state">이 지역에는 아직 채팅방이 없어요.</p>}
         {rooms.map((room) => (
           <button
             className={`room-card ${selectedRoomId === room.id ? "active" : ""}`}

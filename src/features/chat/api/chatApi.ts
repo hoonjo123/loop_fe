@@ -1,6 +1,7 @@
 import { Client, type IMessage, type StompSubscription } from "@stomp/stompjs";
 import { env } from "@/src/config/env";
 import type { ApiError } from "@/src/features/auth/api/authApi";
+import { authenticatedFetch } from "@/src/shared/api/authenticatedFetch";
 
 const apiBaseUrl = (env.apiBaseUrl || "http://localhost:8080/api").replace(/\/$/, "");
 const backendBaseUrl = apiBaseUrl.replace(/\/api$/, "");
@@ -74,23 +75,16 @@ export type CreateRoomInput = {
   expiresAt: string | null;
 };
 
-async function request<T>(path: string, init?: RequestInit, retry = true): Promise<T> {
+async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
   try {
-    response = await fetch(`${apiBaseUrl}${path}`, {
+    response = await authenticatedFetch(`${apiBaseUrl}${path}`, {
       ...init,
       headers: { "Content-Type": "application/json", ...init?.headers },
       credentials: "include",
     });
   } catch {
     throw new Error("서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.");
-  }
-  if (response.status === 401 && retry) {
-    const refreshed = await fetch(`${apiBaseUrl}/auth/refresh/cookie`, {
-      method: "POST",
-      credentials: "include",
-    });
-    if (refreshed.ok) return request(path, init, false);
   }
   if (!response.ok) {
     const body = await response.json().catch(() => ({})) as { code?: string; message?: string };
